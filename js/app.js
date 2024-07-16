@@ -58,7 +58,7 @@ const uploadsuccess = document
         //////////////////  tidy JS part  //////////////////
         const results = tidy(
           answer.data,
-          groupBy("levelType", [summarize({ count: n() })])
+          groupBy(selectedOption, [summarize({ count: n() })])
         );
 
         // console.log(results);
@@ -68,7 +68,7 @@ const uploadsuccess = document
           return item["count"];
         });
         const myLabs = results.map(function (item) {
-          return item["levelType"];
+          return item[selectedOption];
         });
 
         // setup
