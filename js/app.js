@@ -1,12 +1,7 @@
 // load tidy JS
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 
-// test pushing the data outside: challenge it cannot feed the chart as it is a promise from tidy js aggregation
-// const levelTypeData = [];
-// const codeData = [];
-// const catalogTypeData = [];
-// const nameData = [];
-// const descriptionData = [];
+// pushing the data outside: challenge it cannot feed the chart as it is a promise from tidy js aggregation
 
 // const allData = [];
 
@@ -19,17 +14,6 @@ const uploadsuccess = document
       header: true,
       skipEmptyLines: true,
       complete: function (answer) {
-        // console.log("reached here:");
-        // for (i = 0; i < answer.data.length; i++) {
-        //   levelTypeData.push(answer.data[i].levelType);
-        //   codeData.push(answer.data[i].code);
-        //   catalogTypeData.push(answer.data[i].catalogType);
-        //   nameData.push(answer.data[i].name);
-        //   descriptionData.push(answer.data[i].description);
-        // }
-        // console.log(answer.data);
-        // console.log(levelTypeData);
-
         // allData.push(answer.data);
 
         ////////////////// create dropdown for aggregation //////////////////
