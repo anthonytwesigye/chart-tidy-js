@@ -65,49 +65,13 @@ const uploadsuccess = document
             myChart.update();
           });
 
-          //////////////////  tidy JS part  //////////////////
-          const results = tidy(
-            answer.data,
-            groupBy(selectedOption, [summarize({ count: n() })])
-          );
-
-          // console.log(results);
-
-          //////////////////  chart JS starts here  //////////////////
-          const myData = results.map(function (item) {
-            return item["count"];
-          });
-          const myLabs = results.map(function (item) {
-            return item[selectedOption];
-          });
-
-          // setup
-          const data = {
-            labels: myLabs,
-            datasets: [
-              {
-                label: "# count",
-                data: myData,
-                borderWidth: 1,
-              },
-            ],
-          };
-
-          // config
-          const config = {
-            type: "bar",
-            data,
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true,
-                },
-              },
-            },
-          };
+          let chartInitData = createInitChartData(answer.data, selectedOption);
 
           // init renderer
-          const myChart = new Chart(document.getElementById("myChart"), config);
+          const myChart = new Chart(
+            document.getElementById("myChart"),
+            chartInitData.initConfig
+          );
         },
       });
     }
@@ -118,3 +82,50 @@ const uploadsuccess = document
       //
     }
   });
+
+function createInitChartData(loadeddata, grpoption) {
+  //////////////////  tidy JS part  //////////////////
+  const results = tidy(
+    loadeddata,
+    groupBy(grpoption, [summarize({ count: n() })])
+  );
+
+  // console.log(results);
+
+  //////////////////  chart JS starts here  //////////////////
+  const myData = results.map(function (item) {
+    return item["count"];
+  });
+  const myLabs = results.map(function (item) {
+    return item[grpoption];
+  });
+
+  // chart js setup
+  const data = {
+    labels: myLabs,
+    datasets: [
+      {
+        label: "# count",
+        data: myData,
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // config
+  const config = {
+    type: "bar",
+    data,
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  };
+
+  const dataForChart = { initConfig: config };
+
+  return dataForChart;
+}
