@@ -15,7 +15,7 @@ const uploadsuccess = document
       .files[0].name.split(".")
       .pop()
       .toLowerCase();
-    console.log(fileExtension);
+    // console.log(fileExtension);
 
     if (fileExtension === "csv") {
       // csv workflow
@@ -45,23 +45,16 @@ const uploadsuccess = document
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
-            console.log(selectedOption);
-            // update data
-            const resultsUpdated = tidy(
+            // console.log(selectedOption);
+
+            // get updated data
+            const chartUpdatedtData = createUpdatedChartData(
               answer.data,
-              groupBy(selectedOption, [summarize({ count: n() })])
+              selectedOption
             );
 
-            //////////////////  update chart JS  //////////////////
-            let myDataUpdated = resultsUpdated.map(function (item) {
-              return item["count"];
-            });
-            let myLabsUpdated = resultsUpdated.map(function (item) {
-              return item[selectedOption];
-            });
-
-            myChart.data.labels = myLabsUpdated;
-            myChart.data.datasets[0].data = myDataUpdated;
+            myChart.data.labels = chartUpdatedtData.updateLabels;
+            myChart.data.datasets[0].data = chartUpdatedtData.updateData;
             myChart.update();
           });
 
@@ -83,6 +76,9 @@ const uploadsuccess = document
     }
   });
 
+//////////////////  Define dynamic functions for re-use  //////////////////
+
+// function for preparing initial chart data
 function createInitChartData(loadeddata, grpoption) {
   //////////////////  tidy JS part  //////////////////
   const results = tidy(
@@ -126,6 +122,30 @@ function createInitChartData(loadeddata, grpoption) {
   };
 
   const dataForChart = { initConfig: config };
+
+  return dataForChart;
+}
+
+// function for preparing initial chart data
+function createUpdatedChartData(loadeddata, grpoption) {
+  // update data
+  const resultsUpdated = tidy(
+    loadeddata,
+    groupBy(grpoption, [summarize({ count: n() })])
+  );
+
+  //////////////////  update chart JS  //////////////////
+  let myDataUpdated = resultsUpdated.map(function (item) {
+    return item["count"];
+  });
+  let myLabsUpdated = resultsUpdated.map(function (item) {
+    return item[grpoption];
+  });
+
+  const dataForChart = {
+    updateLabels: myLabsUpdated,
+    updateData: myDataUpdated,
+  };
 
   return dataForChart;
 }
