@@ -68,9 +68,93 @@ const uploadsuccess = document
         },
       });
     }
+
+    // Handle excel file
     if (fileExtension === "xlsx" || fileExtension === "xls") {
       //
+      const excel_file = document.getElementById("UploadFile");
+      var reader = new FileReader();
+
+      reader.readAsArrayBuffer(excel_file.files[0]);
+
+      reader.onload = function (event) {
+        var data = new Uint8Array(reader.result);
+
+        var work_book = XLSX.read(data, { type: "array", raw: true });
+
+        var sheet_names = work_book.SheetNames;
+
+        var sheet_data = XLSX.utils.sheet_to_json(
+          work_book.Sheets[sheet_names[0]],
+          {
+            header: 1,
+          }
+        );
+        // console.log(sheet_data);
+        const dataHeaders = sheet_data[0];
+        const dataRows = sheet_data;
+        dataRows.shift();
+        // console.log(dataHeaders);
+        const jsonObjects = [];
+
+        dataRows.forEach((row) => {
+          const dataForObject = {};
+
+          dataHeaders.forEach((field, i) => {
+            const key = field;
+            dataForObject[key] = row[i];
+          });
+
+          jsonObjects.push(dataForObject);
+        });
+
+        // console.log(jsonObjects);
+
+        ////////////////// create dropdown for aggregation //////////////////
+        const sel = document.getElementById("aggregateid");
+
+        const dropdownData = Object.keys(jsonObjects[0]);
+
+        for (let j = 0; j < dropdownData.length; j++) {
+          const opt = document.createElement("option");
+          opt.value = dropdownData[j];
+          opt.text = dropdownData[j];
+
+          sel.add(opt);
+        }
+
+        // initial selection
+        let selectedOption = dropdownData[0];
+
+        // event listener on the dropdown
+        sel.addEventListener("change", function (optiondata) {
+          selectedOption = sel.value;
+          // console.log(selectedOption);
+
+          // get updated data
+          const chartUpdatedtData = createUpdatedChartData(
+            jsonObjects,
+            selectedOption
+          );
+
+          myChart.data.labels = chartUpdatedtData.updateLabels;
+          myChart.data.datasets[0].data = chartUpdatedtData.updateData;
+          myChart.update();
+        });
+
+        let chartInitData = createInitChartData(jsonObjects, selectedOption);
+
+        // init renderer
+        const myChart = new Chart(
+          document.getElementById("myChart"),
+          chartInitData.initConfig
+        );
+
+        ////// end of chart //////
+      };
     }
+
+    // Handle geojson
     if (fileExtension === "geojson") {
       //
     }
