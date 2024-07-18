@@ -1,4 +1,5 @@
 *.csv
 *.xlsx
 data/*
+support_files/*
 !/**/.gitkeep
