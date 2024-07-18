@@ -9,17 +9,111 @@ const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 const uploadsuccess = document
   .getElementById("uploadsuccess")
   .addEventListener("click", () => {
-    Papa.parse(document.getElementById("UploadFile").files[0], {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: function (answer) {
-        // allData.push(answer.data);
+    // check file extension
+    const fileExtension = document
+      .getElementById("UploadFile")
+      .files[0].name.split(".")
+      .pop()
+      .toLowerCase();
+    // console.log(fileExtension);
+
+    if (fileExtension === "csv") {
+      // csv workflow
+      Papa.parse(document.getElementById("UploadFile").files[0], {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function (answer) {
+          // allData.push(answer.data);
+
+          ////////////////// create dropdown for aggregation //////////////////
+          const sel = document.getElementById("aggregateid");
+
+          const dropdownData = Object.keys(answer.data[0]);
+
+          for (let j = 0; j < dropdownData.length; j++) {
+            const opt = document.createElement("option");
+            opt.value = dropdownData[j];
+            opt.text = dropdownData[j];
+
+            sel.add(opt);
+          }
+
+          // initial selection
+          let selectedOption = dropdownData[0];
+
+          // event listener on the dropdown
+          sel.addEventListener("change", function (optiondata) {
+            selectedOption = sel.value;
+            // console.log(selectedOption);
+
+            // get updated data
+            const chartUpdatedtData = createUpdatedChartData(
+              answer.data,
+              selectedOption
+            );
+
+            myChart.data.labels = chartUpdatedtData.updateLabels;
+            myChart.data.datasets[0].data = chartUpdatedtData.updateData;
+            myChart.update();
+          });
+
+          let chartInitData = createInitChartData(answer.data, selectedOption);
+
+          // init renderer
+          const myChart = new Chart(
+            document.getElementById("myChart"),
+            chartInitData.initConfig
+          );
+        },
+      });
+    }
+
+    // Handle excel file
+    if (fileExtension === "xlsx" || fileExtension === "xls") {
+      //
+      const excel_file = document.getElementById("UploadFile");
+      var reader = new FileReader();
+
+      reader.readAsArrayBuffer(excel_file.files[0]);
+
+      reader.onload = function (event) {
+        var data = new Uint8Array(reader.result);
+
+        var work_book = XLSX.read(data, { type: "array", raw: true });
+
+        var sheet_names = work_book.SheetNames;
+
+        var sheet_data = XLSX.utils.sheet_to_json(
+          work_book.Sheets[sheet_names[0]],
+          {
+            header: 1,
+          }
+        );
+        // console.log(sheet_data);
+        const dataHeaders = sheet_data[0];
+        const dataRows = sheet_data;
+        dataRows.shift();
+        // console.log(dataHeaders);
+        const jsonObjects = [];
+
+        dataRows.forEach((row) => {
+          const dataForObject = {};
+
+          dataHeaders.forEach((field, i) => {
+            const key = field;
+            dataForObject[key] = row[i];
+          });
+
+          jsonObjects.push(dataForObject);
+        });
+
+        // console.log(jsonObjects);
 
         ////////////////// create dropdown for aggregation //////////////////
         const sel = document.getElementById("aggregateid");
 
-        const dropdownData = Object.keys(answer.data[0]);
+        const dropdownData = Object.keys(jsonObjects[0]);
 
         for (let j = 0; j < dropdownData.length; j++) {
           const opt = document.createElement("option");
@@ -35,69 +129,107 @@ const uploadsuccess = document
         // event listener on the dropdown
         sel.addEventListener("change", function (optiondata) {
           selectedOption = sel.value;
-          console.log(selectedOption);
-          // update data
-          const resultsUpdated = tidy(
-            answer.data,
-            groupBy(selectedOption, [summarize({ count: n() })])
+          // console.log(selectedOption);
+
+          // get updated data
+          const chartUpdatedtData = createUpdatedChartData(
+            jsonObjects,
+            selectedOption
           );
 
-          //////////////////  update chart JS  //////////////////
-          let myDataUpdated = resultsUpdated.map(function (item) {
-            return item["count"];
-          });
-          let myLabsUpdated = resultsUpdated.map(function (item) {
-            return item[selectedOption];
-          });
-
-          myChart.data.labels = myLabsUpdated;
-          myChart.data.datasets[0].data = myDataUpdated;
+          myChart.data.labels = chartUpdatedtData.updateLabels;
+          myChart.data.datasets[0].data = chartUpdatedtData.updateData;
           myChart.update();
         });
 
-        //////////////////  tidy JS part  //////////////////
-        const results = tidy(
-          answer.data,
-          groupBy("levelType", [summarize({ count: n() })])
-        );
-
-        // console.log(results);
-
-        //////////////////  chart JS starts here  //////////////////
-        const myData = results.map(function (item) {
-          return item["count"];
-        });
-        const myLabs = results.map(function (item) {
-          return item["levelType"];
-        });
-
-        // setup
-        const data = {
-          labels: myLabs,
-          datasets: [
-            {
-              label: "# count",
-              data: myData,
-              borderWidth: 1,
-            },
-          ],
-        };
-
-        // config
-        const config = {
-          type: "bar",
-          data,
-          options: {
-            scales: {
-              y: {
-                beginAtZero: true,
-              },
-            },
-          },
-        };
+        let chartInitData = createInitChartData(jsonObjects, selectedOption);
 
         // init renderer
-        const myChart = new Chart(document.getElementById("myChart"), config);
-      },
-    });
+        const myChart = new Chart(
+          document.getElementById("myChart"),
+          chartInitData.initConfig
+        );
+
+        ////// end of chart //////
+      };
+    }
+
+    // Handle geojson
+    if (fileExtension === "geojson") {
+      //
+    }
   });
+
+//////////////////  Define dynamic functions for re-use  //////////////////
+
+// function for preparing initial chart data
+function createInitChartData(loadeddata, grpoption) {
+  //////////////////  tidy JS part  //////////////////
+  const results = tidy(
+    loadeddata,
+    groupBy(grpoption, [summarize({ count: n() })])
+  );
+
+  // console.log(results);
+
+  //////////////////  chart JS starts here  //////////////////
+  const myData = results.map(function (item) {
+    return item["count"];
+  });
+  const myLabs = results.map(function (item) {
+    return item[grpoption];
+  });
+
+  // chart js setup
+  const data = {
+    labels: myLabs,
+    datasets: [
+      {
+        label: "# count",
+        data: myData,
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // config
+  const config = {
+    type: "bar",
+    data,
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  };
+
+  const dataForChart = { initConfig: config };
+
+  return dataForChart;
+}
+
+// function for preparing initial chart data
+function createUpdatedChartData(loadeddata, grpoption) {
+  // update data
+  const resultsUpdated = tidy(
+    loadeddata,
+    groupBy(grpoption, [summarize({ count: n() })])
+  );
+
+  //////////////////  update chart JS  //////////////////
+  let myDataUpdated = resultsUpdated.map(function (item) {
+    return item["count"];
+  });
+  let myLabsUpdated = resultsUpdated.map(function (item) {
+    return item[grpoption];
+  });
+
+  const dataForChart = {
+    updateLabels: myLabsUpdated,
+    updateData: myDataUpdated,
+  };
+
+  return dataForChart;
+}
