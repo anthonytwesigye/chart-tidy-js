@@ -42,6 +42,14 @@ const uploadsuccess = document
           // initial selection
           let selectedOption = dropdownData[0];
 
+          let chartInitData = createInitChartData(answer.data, selectedOption);
+
+          // init renderer
+          const myChart = new Chart(
+            document.getElementById("myChart"),
+            chartInitData.initConfig
+          );
+
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
@@ -57,14 +65,6 @@ const uploadsuccess = document
             myChart.data.datasets[0].data = chartUpdatedtData.updateData;
             myChart.update();
           });
-
-          let chartInitData = createInitChartData(answer.data, selectedOption);
-
-          // init renderer
-          const myChart = new Chart(
-            document.getElementById("myChart"),
-            chartInitData.initConfig
-          );
         },
       });
     }
@@ -126,6 +126,14 @@ const uploadsuccess = document
         // initial selection
         let selectedOption = dropdownData[0];
 
+        let chartInitData = createInitChartData(jsonObjects, selectedOption);
+
+        // init renderer
+        const myChart = new Chart(
+          document.getElementById("myChart"),
+          chartInitData.initConfig
+        );
+
         // event listener on the dropdown
         sel.addEventListener("change", function (optiondata) {
           selectedOption = sel.value;
@@ -141,14 +149,6 @@ const uploadsuccess = document
           myChart.data.datasets[0].data = chartUpdatedtData.updateData;
           myChart.update();
         });
-
-        let chartInitData = createInitChartData(jsonObjects, selectedOption);
-
-        // init renderer
-        const myChart = new Chart(
-          document.getElementById("myChart"),
-          chartInitData.initConfig
-        );
 
         ////// end of chart //////
       };
@@ -176,7 +176,7 @@ const uploadsuccess = document
           });
           // console.log(jsonObjects);
 
-          ////////////////// create dropdown for aggregation //////////////////
+          // create dropdown for aggregation
           const sel = document.getElementById("aggregateid");
 
           const dropdownData = Object.keys(jsonObjects[0]);
@@ -192,6 +192,15 @@ const uploadsuccess = document
           // initial selection
           let selectedOption = dropdownData[0];
           console.log(selectedOption);
+
+          let chartInitData = createInitChartData(jsonObjects, selectedOption);
+
+          // init renderer
+          const myChart = new Chart(
+            document.getElementById("myChart"),
+            chartInitData.initConfig
+          );
+
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
@@ -207,14 +216,6 @@ const uploadsuccess = document
             myChart.data.datasets[0].data = chartUpdatedtData.updateData;
             myChart.update();
           });
-
-          let chartInitData = createInitChartData(jsonObjects, selectedOption);
-
-          // init renderer
-          const myChart = new Chart(
-            document.getElementById("myChart"),
-            chartInitData.initConfig
-          );
 
           ////// end of chart //////
         } catch (e) {
