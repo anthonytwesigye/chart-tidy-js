@@ -156,7 +156,71 @@ const uploadsuccess = document
 
     // Handle geojson
     if (fileExtension === "geojson") {
-      //
+      // console.log(fileExtension);
+      // get the file
+      const geojson_file = document.getElementById("UploadFile").files[0];
+      // create a file reader and pass the file to it
+      var reader = new FileReader();
+      reader.readAsText(geojson_file);
+      reader.onload = function (e) {
+        try {
+          const fileText = e.target.result;
+          const geojsonData = JSON.parse(fileText);
+          // console.log(geojsonData);
+          // data to chart
+          const featuresData = geojsonData.features;
+          // console.log(featuresData);
+          const jsonObjects = [];
+          featuresData.forEach((feature) => {
+            jsonObjects.push(feature.properties);
+          });
+          // console.log(jsonObjects);
+
+          ////////////////// create dropdown for aggregation //////////////////
+          const sel = document.getElementById("aggregateid");
+
+          const dropdownData = Object.keys(jsonObjects[0]);
+
+          for (let j = 0; j < dropdownData.length; j++) {
+            const opt = document.createElement("option");
+            opt.value = dropdownData[j];
+            opt.text = dropdownData[j];
+
+            sel.add(opt);
+          }
+
+          // initial selection
+          let selectedOption = dropdownData[0];
+          console.log(selectedOption);
+          // event listener on the dropdown
+          sel.addEventListener("change", function (optiondata) {
+            selectedOption = sel.value;
+            // console.log(selectedOption);
+
+            // get updated data
+            const chartUpdatedtData = createUpdatedChartData(
+              jsonObjects,
+              selectedOption
+            );
+
+            myChart.data.labels = chartUpdatedtData.updateLabels;
+            myChart.data.datasets[0].data = chartUpdatedtData.updateData;
+            myChart.update();
+          });
+
+          let chartInitData = createInitChartData(jsonObjects, selectedOption);
+
+          // init renderer
+          const myChart = new Chart(
+            document.getElementById("myChart"),
+            chartInitData.initConfig
+          );
+
+          ////// end of chart //////
+        } catch (e) {
+          alert("Unable to read file as GeoJSON.");
+        }
+      };
     }
   });
 
