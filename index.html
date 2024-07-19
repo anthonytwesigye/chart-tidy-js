@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="libs/bootstrap.min.css" />
     <link rel="stylesheet" href="styles/style.css" />
-    <title>Chart JS and csv</title>
+    <!-- leaflet css -->
+    <link rel="stylesheet" href="libs/leaflet.css" />
+    <link rel="stylesheet" href="libs/leaflet-measure.css" />
+    <link rel="stylesheet" href="libs/leaflet.draw.css" />
+
+    <title>Chart JS and leaflet</title>
   </head>
   <body>
     <label for="UploadFile">Choose file</label>
@@ -16,11 +21,21 @@
     <div class="chartBox">
       <canvas id="myChart"></canvas>
     </div>
+    <div id="map"></div>
+    <!-- JS -->
+    <!-- data and charts -->
     <script src="libs/chart.js"></script>
     <script src="libs/d3-array.v2.min.js"></script>
     <script src="libs/tidy.min.js"></script>
     <script src="libs/xlsx.full.min.js"></script>
     <script src="libs/papaparse.min.js"></script>
+    <!-- leaflet -->
+    <script src="libs/leaflet.js"></script>
+    <script src="libs/leaflet.browser.print.min.js"></script>
+    <script src="libs/leaflet-measure.js"></script>
+    <script src="libs/leaflet.draw.js"></script>
+    <script src="libs/turf.min.js"></script>
+    <!-- app -->
     <script src="js/app.js"></script>
   </body>
 </html>
