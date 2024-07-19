@@ -42,6 +42,14 @@ const uploadsuccess = document
           // initial selection
           let selectedOption = dropdownData[0];
 
+          let chartInitData = createInitChartData(answer.data, selectedOption);
+
+          // init renderer
+          const myChart = new Chart(
+            document.getElementById("myChart"),
+            chartInitData.initConfig
+          );
+
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
@@ -57,14 +65,6 @@ const uploadsuccess = document
             myChart.data.datasets[0].data = chartUpdatedtData.updateData;
             myChart.update();
           });
-
-          let chartInitData = createInitChartData(answer.data, selectedOption);
-
-          // init renderer
-          const myChart = new Chart(
-            document.getElementById("myChart"),
-            chartInitData.initConfig
-          );
         },
       });
     }
@@ -126,6 +126,14 @@ const uploadsuccess = document
         // initial selection
         let selectedOption = dropdownData[0];
 
+        let chartInitData = createInitChartData(jsonObjects, selectedOption);
+
+        // init renderer
+        const myChart = new Chart(
+          document.getElementById("myChart"),
+          chartInitData.initConfig
+        );
+
         // event listener on the dropdown
         sel.addEventListener("change", function (optiondata) {
           selectedOption = sel.value;
@@ -142,29 +150,172 @@ const uploadsuccess = document
           myChart.update();
         });
 
-        let chartInitData = createInitChartData(jsonObjects, selectedOption);
-
-        // init renderer
-        const myChart = new Chart(
-          document.getElementById("myChart"),
-          chartInitData.initConfig
-        );
-
         ////// end of chart //////
       };
     }
 
     // Handle geojson
     if (fileExtension === "geojson") {
-      //
+      // console.log(fileExtension);
+      // get the file
+      const geojson_file = document.getElementById("UploadFile").files[0];
+      // create a file reader and pass the file to it
+      var reader = new FileReader();
+      reader.readAsText(geojson_file);
+      reader.onload = function (e) {
+        try {
+          const fileText = e.target.result;
+          const geojsonData = JSON.parse(fileText);
+          // console.log(geojsonData);
+          // data to chart
+          const featuresData = geojsonData.features;
+          // console.log(featuresData);
+          const jsonObjects = [];
+          featuresData.forEach((feature) => {
+            jsonObjects.push(feature.properties);
+          });
+          // console.log(jsonObjects);
+
+          // create dropdown for aggregation
+          const sel = document.getElementById("aggregateid");
+
+          const dropdownData = Object.keys(jsonObjects[0]);
+
+          for (let j = 0; j < dropdownData.length; j++) {
+            const opt = document.createElement("option");
+            opt.value = dropdownData[j];
+            opt.text = dropdownData[j];
+
+            sel.add(opt);
+          }
+
+          // initial selection
+          let selectedOption = dropdownData[0];
+          console.log(selectedOption);
+
+          let chartInitData = createInitChartData(jsonObjects, selectedOption);
+
+          // init renderer
+          const myChart = new Chart(
+            document.getElementById("myChart"),
+            chartInitData.initConfig
+          );
+
+          // event listener on the dropdown
+          sel.addEventListener("change", function (optiondata) {
+            selectedOption = sel.value;
+            // console.log(selectedOption);
+
+            // get updated data
+            const chartUpdatedtData = createUpdatedChartData(
+              jsonObjects,
+              selectedOption
+            );
+
+            myChart.data.labels = chartUpdatedtData.updateLabels;
+            myChart.data.datasets[0].data = chartUpdatedtData.updateData;
+            myChart.update();
+          });
+          // end of chart
+          ////// leaflet map //////
+          // map data
+          var mapData = L.geoJSON(geojsonData, {
+            onEachFeature: function (feature, layer) {
+              if (feature.properties) {
+                layer.bindPopup(createPopupContent(feature.properties), {
+                  autoPan: true,
+                  maxHeight: 300, // Set max height for the popup
+                });
+                layer.on("click", function () {
+                  this.openPopup();
+                });
+              }
+            },
+          }).addTo(map);
+
+          map.fitBounds(mapData.getBounds());
+          // end of leaflet
+        } catch (e) {
+          alert("Unable to read file as GeoJSON.");
+        }
+      };
     }
   });
 
-//////////////////  Define dynamic functions for re-use  //////////////////
+//////////////////  Leaflet  //////////////////
+
+// map initialisation
+var map = L.map("map").setView([-17.926409198529797, 19.777738998189392], 13);
+// osm layer
+var osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+});
+osm.addTo(map);
+
+// tile layers
+// water color
+var watercolor = L.tileLayer(
+  "https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.{ext}",
+  {
+    minZoom: 1,
+    maxZoom: 16,
+    attribution:
+      '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    ext: "jpg",
+  }
+);
+
+// dark matter
+var darkMatter = L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: "abcd",
+    maxZoom: 20,
+  }
+);
+
+// google street
+googleStreets = L.tileLayer(
+  "http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+  {
+    maxZoom: 20,
+    subdomains: ["mt0", "mt1", "mt2", "mt3"],
+  }
+);
+
+// layer controller
+var baseLayers = {
+  OpenStreetMap: osm,
+  WaterColor: watercolor,
+  "Dark Matter": darkMatter,
+  "Google Streets": googleStreets,
+};
+
+var overlays = {};
+
+L.control
+  .layers(baseLayers, overlays, {
+    collapsed: false,
+  })
+  .addTo(map);
+
+//////////////////  FUNCTIONS  //////////////////
+// Function to create a popup with feature properties
+function createPopupContent(properties) {
+  let content = '<div class="popup-content"><table>';
+  for (const key in properties) {
+    content += `<tr><th>${key}</th><td>${properties[key]}</td></tr>`;
+  }
+  content += "</table></div>";
+  return content;
+}
 
 // function for preparing initial chart data
 function createInitChartData(loadeddata, grpoption) {
-  //////////////////  tidy JS part  //////////////////
+  //  tidy JS part
   const results = tidy(
     loadeddata,
     groupBy(grpoption, [summarize({ count: n() })])
@@ -172,7 +323,7 @@ function createInitChartData(loadeddata, grpoption) {
 
   // console.log(results);
 
-  //////////////////  chart JS starts here  //////////////////
+  //  chart JS starts here
   const myData = results.map(function (item) {
     return item["count"];
   });
@@ -218,7 +369,7 @@ function createUpdatedChartData(loadeddata, grpoption) {
     groupBy(grpoption, [summarize({ count: n() })])
   );
 
-  //////////////////  update chart JS  //////////////////
+  //  update chart JS
   let myDataUpdated = resultsUpdated.map(function (item) {
     return item["count"];
   });
