@@ -218,23 +218,7 @@ const uploadsuccess = document
           });
           // end of chart
           ////// leaflet map //////
-          // map data
-          var mapData = L.geoJSON(geojsonData, {
-            onEachFeature: function (feature, layer) {
-              if (feature.properties) {
-                layer.bindPopup(createPopupContent(feature.properties), {
-                  autoPan: true,
-                  maxHeight: 300, // Set max height for the popup
-                });
-                layer.on("click", function () {
-                  this.openPopup();
-                });
-              }
-            },
-          }).addTo(map);
-
-          map.fitBounds(mapData.getBounds());
-          // end of leaflet
+          const addLayerToMap = addDataToMap(geojsonData);
         } catch (e) {
           alert("Unable to read file as GeoJSON.");
         }
@@ -383,4 +367,22 @@ function createUpdatedChartData(loadeddata, grpoption) {
   };
 
   return dataForChart;
+}
+
+function addDataToMap(inputData) {
+  const mapData = L.geoJSON(inputData, {
+    onEachFeature: function (feature, layer) {
+      if (feature.properties) {
+        layer.bindPopup(createPopupContent(feature.properties), {
+          autoPan: true,
+          maxHeight: 300, // Set max height for the popup
+        });
+        layer.on("click", function () {
+          this.openPopup();
+        });
+      }
+    },
+  }).addTo(map);
+
+  map.fitBounds(mapData.getBounds());
 }
