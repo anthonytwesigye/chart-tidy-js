@@ -218,23 +218,7 @@ const uploadsuccess = document
           });
           // end of chart
           ////// leaflet map //////
-          // map data
-          var mapData = L.geoJSON(geojsonData, {
-            onEachFeature: function (feature, layer) {
-              if (feature.properties) {
-                layer.bindPopup(createPopupContent(feature.properties), {
-                  autoPan: true,
-                  maxHeight: 300, // Set max height for the popup
-                });
-                layer.on("click", function () {
-                  this.openPopup();
-                });
-              }
-            },
-          }).addTo(map);
-
-          map.fitBounds(mapData.getBounds());
-          // end of leaflet
+          const addLayerToMap = addDataToMap(geojsonData);
         } catch (e) {
           alert("Unable to read file as GeoJSON.");
         }
@@ -383,4 +367,98 @@ function createUpdatedChartData(loadeddata, grpoption) {
   };
 
   return dataForChart;
+}
+
+// function for adding data to map
+function addDataToMap(inputData) {
+  const mapData = L.geoJSON(inputData, {
+    onEachFeature: function (feature, layer) {
+      if (feature.properties) {
+        layer.bindPopup(createPopupContent(feature.properties), {
+          autoPan: true,
+          maxHeight: 300, // Set max height for the popup
+        });
+        layer.on("click", function () {
+          this.openPopup();
+        });
+      }
+    },
+  }).addTo(map);
+
+  map.fitBounds(mapData.getBounds());
+}
+
+// function for getting unique values for a column of geojson data
+function getUniqueCatValues(geojsondata, field) {
+  const uniqueCategories = [
+    ...new Set(
+      geojsondata.features.map((feature) => feature.properties[field])
+    ),
+  ];
+
+  return uniqueCategories;
+}
+
+// function for returning color based on a unique array
+function getPropColor(uniqarray, prop) {
+  const colorsForProperties = uniqarray.map((entry, i) => {
+    const colorRamp = [
+      "#a6cee3",
+      "#1f78b4",
+      "#b2df8a",
+      "#33a02c",
+      "#fb9a99",
+      "#e31a1c",
+      "#fdbf6f",
+      "#ff7f00",
+      "#cab2d6",
+      "#6a3d9a",
+      "#ffff99",
+      "#b15928",
+      "#999999",
+    ];
+    switch (i) {
+      case 0:
+        //   return { index: i, data: entry, color: colorRamp[i] };
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 1:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 2:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 3:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 4:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 5:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 6:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 7:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 8:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 9:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 10:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 11:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      default:
+        return { data: entry, color: colorRamp[colorRamp.length] };
+    }
+  });
+
+  return colorsForProperties[uniqarray.indexOf(prop)].color;
 }
