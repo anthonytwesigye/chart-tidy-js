@@ -369,6 +369,7 @@ function createUpdatedChartData(loadeddata, grpoption) {
   return dataForChart;
 }
 
+// function for adding data to map
 function addDataToMap(inputData) {
   const mapData = L.geoJSON(inputData, {
     onEachFeature: function (feature, layer) {
@@ -385,4 +386,15 @@ function addDataToMap(inputData) {
   }).addTo(map);
 
   map.fitBounds(mapData.getBounds());
+}
+
+// function for getting unique values for a column of geojson data
+function getUniqueCatValues(geojsondata, field) {
+  const uniqueCategories = [
+    ...new Set(
+      geojsondata.features.map((feature) => feature.properties[field])
+    ),
+  ];
+
+  return uniqueCategories;
 }
