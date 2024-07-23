@@ -398,3 +398,67 @@ function getUniqueCatValues(geojsondata, field) {
 
   return uniqueCategories;
 }
+
+// function for returning color based on a unique array
+function getPropColor(uniqarray, prop) {
+  const colorsForProperties = uniqarray.map((entry, i) => {
+    const colorRamp = [
+      "#a6cee3",
+      "#1f78b4",
+      "#b2df8a",
+      "#33a02c",
+      "#fb9a99",
+      "#e31a1c",
+      "#fdbf6f",
+      "#ff7f00",
+      "#cab2d6",
+      "#6a3d9a",
+      "#ffff99",
+      "#b15928",
+      "#999999",
+    ];
+    switch (i) {
+      case 0:
+        //   return { index: i, data: entry, color: colorRamp[i] };
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 1:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 2:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 3:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 4:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 5:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 6:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 7:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 8:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 9:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 10:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      case 11:
+        return { data: entry, color: colorRamp[i] };
+        break;
+      default:
+        return { data: entry, color: colorRamp[colorRamp.length] };
+    }
+  });
+
+  return colorsForProperties[uniqarray.indexOf(prop)].color;
+}
