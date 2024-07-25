@@ -337,6 +337,33 @@ function createInitChartData(loadeddata, grpoption) {
           beginAtZero: true,
         },
       },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (tooltipItem) => {
+              //   console.log(tooltipItem.datasetIndex);
+              //   console.log(tooltipItem.dataIndex);
+              //   console.log(tooltipItem.chart.data.datasets[0]);
+              //   reducing
+              const arrData = tooltipItem.chart.data.datasets[0].data;
+              const dataSum = arrData.reduce((a, b) => a + b, 0);
+              const dataLab = (
+                (tooltipItem.chart.data.datasets[0].data[
+                  tooltipItem.dataIndex
+                ] /
+                  dataSum) *
+                100
+              ).toFixed(1);
+              return ` ${dataLab} %, Count: ${
+                tooltipItem.chart.data.datasets[0].data[tooltipItem.dataIndex]
+              }`;
+            },
+            // afterTitle: (context) => {
+            //   return "--------";
+            // },
+          },
+        },
+      },
     },
   };
 
