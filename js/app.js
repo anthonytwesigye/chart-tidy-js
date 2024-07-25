@@ -333,6 +333,11 @@ function createInitChartData(loadeddata, grpoption) {
     data,
     options: {
       scales: {
+        x: {
+          grid: {
+            drawOnChartArea: false,
+          },
+        },
         y: {
           beginAtZero: true,
         },
