@@ -218,7 +218,15 @@ const uploadsuccess = document
           });
           // end of chart
           ////// leaflet map //////
-          const addLayerToMap = addDataToMap(geojsonData);
+          const uniqAttributeCat = getUniqueCatValues(
+            geojsonData,
+            selectedOption
+          );
+          const addLayerToMap = addDataToMap(
+            geojsonData,
+            uniqAttributeCat,
+            selectedOption
+          );
         } catch (e) {
           alert("Unable to read file as GeoJSON.");
         }
@@ -405,22 +413,62 @@ function createUpdatedChartData(loadeddata, grpoption) {
 }
 
 // function for adding data to map
-function addDataToMap(inputData) {
-  const mapData = L.geoJSON(inputData, {
-    onEachFeature: function (feature, layer) {
-      if (feature.properties) {
-        layer.bindPopup(createPopupContent(feature.properties), {
-          autoPan: true,
-          maxHeight: 300, // Set max height for the popup
-        });
-        layer.on("click", function () {
-          this.openPopup();
-        });
-      }
-    },
-  }).addTo(map);
+function addDataToMap(inputData, attributecats, mapattribute) {
+  //get layer type
+  const layerGeomType = getLayerGeomTypes(inputData)[0];
 
-  map.fitBounds(mapData.getBounds());
+  if ((layerGeomType === "Point") | (layerGeomType === "MultiPoint")) {
+    const mapData = L.geoJSON(inputData, {
+      pointToLayer: function (feature, latlng) {
+        const currColor = getPropColor(
+          attributecats,
+          feature.properties[mapattribute]
+        );
+        return L.marker(latlng, {
+          icon: colorMarker(currColor),
+        });
+      },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(createPopupContent(feature.properties), {
+            autoPan: true,
+            maxHeight: 300, // Set max height for the popup
+          });
+          layer.on("click", function () {
+            this.openPopup();
+          });
+        }
+      },
+    }).addTo(map);
+    map.fitBounds(mapData.getBounds());
+  } else {
+    const mapData = L.geoJSON(inputData, {
+      onEachFeature: function (feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(createPopupContent(feature.properties), {
+            autoPan: true,
+            maxHeight: 300, // Set max height for the popup
+          });
+          layer.on("click", function () {
+            this.openPopup();
+          });
+        }
+      },
+      sytle: function (feature) {
+        const currColor = getPropColor(
+          attributecats,
+          feature.properties[mapattribute]
+        );
+        const myStyle = {
+          color: currColor,
+          // weight: 5,
+          // opacity: 0.65,
+        };
+        return myStyle;
+      },
+    }).addTo(map);
+    map.fitBounds(mapData.getBounds());
+  }
 }
 
 // function for getting unique values for a column of geojson data
@@ -506,6 +554,25 @@ function getLayerGeomTypes(geojsondata) {
   ];
 
   return uniqueTypes;
+}
+
+// the function creates colorful svg
+function colorMarker(color) {
+  const svgTemplate = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="marker">
+      <path fill-opacity=".25" d="M16 32s1.427-9.585 3.761-12.025c4.595-4.805 8.685-.99 8.685-.99s4.044 3.964-.526 8.743C25.514 30.245 16 32 16 32z"/>
+      <path stroke="#fff" fill="${color}" d="M15.938 32S6 17.938 6 11.938C6 .125 15.938 0 15.938 0S26 .125 26 11.875C26 18.062 15.938 32 15.938 32zM16 6a4 4 0 100 8 4 4 0 000-8z"/>
+    </svg>`;
+
+  const icon = L.divIcon({
+    className: "marker",
+    html: svgTemplate,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30],
+  });
+
+  return icon;
 }
 
 // #endregion
