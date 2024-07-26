@@ -462,7 +462,7 @@ function addDataToMap(inputData, attributecats, mapattribute) {
         console.log(currpolColor);
         const currStyle = {
           fillColor: currpolColor,
-          weight: 2,
+          weight: 0.1,
           opacity: 1,
           color: "white",
           dashArray: "3",
@@ -543,7 +543,7 @@ function getPropColor(uniqarray, prop) {
         return { data: entry, color: colorRamp[i] };
         break;
       default:
-        return { data: entry, color: colorRamp[colorRamp.length] };
+        return { data: entry, color: colorRamp[colorRamp.length - 1] };
     }
   });
 
