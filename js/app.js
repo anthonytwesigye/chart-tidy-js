@@ -454,17 +454,21 @@ function addDataToMap(inputData, attributecats, mapattribute) {
           });
         }
       },
-      sytle: function (feature) {
-        const currColor = getPropColor(
+      style: function (feature) {
+        const currpolColor = getPropColor(
           attributecats,
           feature.properties[mapattribute]
         );
-        const myStyle = {
-          color: currColor,
-          // weight: 5,
-          // opacity: 0.65,
+        console.log(currpolColor);
+        const currStyle = {
+          fillColor: currpolColor,
+          weight: 2,
+          opacity: 1,
+          color: "white",
+          dashArray: "3",
+          fillOpacity: 0.7,
         };
-        return myStyle;
+        return currStyle;
       },
     }).addTo(map);
     map.fitBounds(mapData.getBounds());
