@@ -226,7 +226,7 @@ const uploadsuccess = document
     }
   });
 
-//////////////////  Leaflet  //////////////////
+// #region ////////////////  Leaflet  //////////////////
 
 // map initialisation
 var map = L.map("map").setView([-17.926409198529797, 19.777738998189392], 13);
@@ -286,7 +286,10 @@ L.control
   })
   .addTo(map);
 
-//////////////////  FUNCTIONS  //////////////////
+// #endregion
+
+// #region ////////////  FUNCTIONS  //////////////////
+
 // Function to create a popup with feature properties
 function createPopupContent(properties) {
   let content = '<div class="popup-content"><table>';
@@ -494,3 +497,15 @@ function getPropColor(uniqarray, prop) {
 
   return colorsForProperties[uniqarray.indexOf(prop)].color;
 }
+
+// function get layer geometry types
+
+function getLayerGeomTypes(geojsondata) {
+  const uniqueTypes = [
+    ...new Set(geojsondata.features.map((feature) => feature.geometry.type)),
+  ];
+
+  return uniqueTypes;
+}
+
+// #endregion
