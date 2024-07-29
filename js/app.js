@@ -611,11 +611,28 @@ function getPropColor(uniqarray, prop) {
 }
 
 // function get layer geometry types
-
 function getLayerGeomTypes(geojsondata) {
   const uniqueTypes = [
     ...new Set(geojsondata.features.map((feature) => feature.geometry.type)),
   ];
+
+  return uniqueTypes;
+}
+
+// get attribute data type from json
+function getAttributeTypeJson(jsondata, attribute) {
+  let uniqueTypes;
+  if ("features" in jsondata) {
+    uniqueTypes = [
+      ...new Set(
+        jsondata.features.map((feature) => typeof feature.properties[attribute])
+      ),
+    ];
+  } else {
+    uniqueTypes = [
+      ...new Set(jsondata.map((feature) => typeof feature[attribute])),
+    ];
+  }
 
   return uniqueTypes;
 }
