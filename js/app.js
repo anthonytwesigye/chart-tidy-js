@@ -1,5 +1,7 @@
 // load tidy JS
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
+// global objets
+var mapData;
 
 // pushing the data outside: challenge it cannot feed the chart as it is a promise from tidy js aggregation
 
@@ -215,6 +217,17 @@ const uploadsuccess = document
             myChart.data.labels = chartUpdatedtData.updateLabels;
             myChart.data.datasets[0].data = chartUpdatedtData.updateData;
             myChart.update();
+
+            // update map data
+            const updateUniqAttributeCat = getUniqueCatValues(
+              geojsonData,
+              selectedOption
+            );
+            updateDataOnMap(
+              geojsonData,
+              updateUniqAttributeCat,
+              selectedOption
+            );
           });
           // end of chart
           ////// leaflet map //////
@@ -417,8 +430,8 @@ function addDataToMap(inputData, attributecats, mapattribute) {
   //get layer type
   const layerGeomType = getLayerGeomTypes(inputData)[0];
 
-  if ((layerGeomType === "Point") | (layerGeomType === "MultiPoint")) {
-    const mapData = L.geoJSON(inputData, {
+  if (layerGeomType === "Point" || layerGeomType === "MultiPoint") {
+    /*const*/ mapData = L.geoJSON(inputData, {
       pointToLayer: function (feature, latlng) {
         const currColor = getPropColor(
           attributecats,
@@ -442,7 +455,7 @@ function addDataToMap(inputData, attributecats, mapattribute) {
     }).addTo(map);
     map.fitBounds(mapData.getBounds());
   } else {
-    const mapData = L.geoJSON(inputData, {
+    /*const*/ mapData = L.geoJSON(inputData, {
       onEachFeature: function (feature, layer) {
         if (feature.properties) {
           layer.bindPopup(createPopupContent(feature.properties), {
@@ -459,19 +472,66 @@ function addDataToMap(inputData, attributecats, mapattribute) {
           attributecats,
           feature.properties[mapattribute]
         );
-        console.log(currpolColor);
+        // console.log(currpolColor);
         const currStyle = {
           fillColor: currpolColor,
           weight: 0.1,
           opacity: 1,
           color: "white",
-          dashArray: "3",
+          dashArray: "",
           fillOpacity: 0.7,
         };
         return currStyle;
       },
     }).addTo(map);
     map.fitBounds(mapData.getBounds());
+  }
+}
+function updateDataOnMap(inputData, attributecats, mapattribute) {
+  //get layer type
+  const layerGeomType = getLayerGeomTypes(inputData)[0];
+
+  if (layerGeomType === "Point" || layerGeomType === "MultiPoint") {
+    // recreate the layer as other options did not work for markers
+    mapData = L.geoJSON(inputData, {
+      pointToLayer: function (feature, latlng) {
+        const currColor = getPropColor(
+          attributecats,
+          feature.properties[mapattribute]
+        );
+        return L.marker(latlng, {
+          icon: colorMarker(currColor),
+        });
+      },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(createPopupContent(feature.properties), {
+            autoPan: true,
+            maxHeight: 300, // Set max height for the popup
+          });
+          layer.on("click", function () {
+            this.openPopup();
+          });
+        }
+      },
+    }).addTo(map);
+  } else {
+    mapData.setStyle(function (feature) {
+      const currpolColor = getPropColor(
+        attributecats,
+        feature.properties[mapattribute]
+      );
+      // console.log(currpolColor);
+      const currStyle = {
+        fillColor: currpolColor,
+        weight: 0.1,
+        opacity: 1,
+        color: "white",
+        dashArray: "",
+        fillOpacity: 0.7,
+      };
+      return currStyle;
+    });
   }
 }
 
