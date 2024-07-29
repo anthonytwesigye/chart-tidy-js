@@ -194,29 +194,57 @@ const uploadsuccess = document
           // initial selection
           let selectedOption = dropdownData[0];
           console.log(selectedOption);
+          let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
+          // init chart variable
+          let myChart;
 
           let chartInitData = createInitChartData(jsonObjects, selectedOption);
-
-          // init renderer
-          const myChart = new Chart(
-            document.getElementById("myChart"),
-            chartInitData.initConfig
+          let boxplotInitData = createInitBoxplotData(
+            jsonObjects,
+            selectedOption
           );
+
+          if (attributeType[0] === "number") {
+            // init renderer
+            myChart = new Chart(
+              document.getElementById("myChart"),
+              boxplotInitData.initConfig
+            );
+          } else {
+            // init renderer
+            myChart = new Chart(
+              document.getElementById("myChart"),
+              chartInitData.initConfig
+            );
+          }
 
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
             // console.log(selectedOption);
+            console.log(attributeType);
 
-            // get updated data
-            const chartUpdatedtData = createUpdatedChartData(
-              jsonObjects,
-              selectedOption
-            );
+            if (attributeType[0] === "number") {
+              // get updated data
+              const boxplotUpdatedtData = createUpdatedBoxplotData(
+                jsonObjects,
+                selectedOption
+              );
 
-            myChart.data.labels = chartUpdatedtData.updateLabels;
-            myChart.data.datasets[0].data = chartUpdatedtData.updateData;
-            myChart.update();
+              myChart.data.labels = boxplotUpdatedtData.updateLabels;
+              myChart.data.datasets[0].data = boxplotUpdatedtData.updateData;
+              myChart.update();
+            } else {
+              // get updated data
+              const chartUpdatedtData = createUpdatedChartData(
+                jsonObjects,
+                selectedOption
+              );
+
+              myChart.data.labels = chartUpdatedtData.updateLabels;
+              myChart.data.datasets[0].data = chartUpdatedtData.updateData;
+              myChart.update();
+            }
 
             // update map data
             const updateUniqAttributeCat = getUniqueCatValues(
@@ -401,6 +429,51 @@ function createInitChartData(loadeddata, grpoption) {
   return dataForChart;
 }
 
+// function for preparing initial boxplot data
+function createInitBoxplotData(loadeddata, grpoption) {
+  // console.log(loadeddata);
+
+  //  chart JS starts here
+  const myData = loadeddata.map(function (item) {
+    return item[grpoption];
+  });
+  const myLabs = grpoption;
+
+  // chart js setup
+  const data = {
+    labels: myLabs,
+    datasets: [
+      {
+        label: "",
+        data: [myData],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // config
+  const config = {
+    type: "boxplot",
+    data,
+    options: {
+      scales: {
+        x: {
+          grid: {
+            drawOnChartArea: false,
+          },
+        },
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  };
+
+  const dataForChart = { initConfig: config };
+
+  return dataForChart;
+}
+
 // function for preparing initial chart data
 function createUpdatedChartData(loadeddata, grpoption) {
   // update data
@@ -416,6 +489,22 @@ function createUpdatedChartData(loadeddata, grpoption) {
   let myLabsUpdated = resultsUpdated.map(function (item) {
     return item[grpoption];
   });
+
+  const dataForChart = {
+    updateLabels: myLabsUpdated,
+    updateData: myDataUpdated,
+  };
+
+  return dataForChart;
+}
+
+// function for preparing initial chart data
+function createUpdatedBoxplotData(loadeddata, grpoption) {
+  //  update chart JS
+  let myDataUpdated = loadeddata.map(function (item) {
+    return item[grpoption];
+  });
+  let myLabsUpdated = grpoption;
 
   const dataForChart = {
     updateLabels: myLabsUpdated,
