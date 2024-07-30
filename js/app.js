@@ -198,19 +198,21 @@ const uploadsuccess = document
           // init chart variable
           let myChart;
 
-          let chartInitData = createInitChartData(jsonObjects, selectedOption);
-          let boxplotInitData = createInitBoxplotData(
-            jsonObjects,
-            selectedOption
-          );
-
           if (attributeType[0] === "number") {
+            let boxplotInitData = createInitBoxplotData(
+              jsonObjects,
+              selectedOption
+            );
             // init renderer
             myChart = new Chart(
               document.getElementById("myChart"),
               boxplotInitData.initConfig
             );
           } else {
+            let chartInitData = createInitChartData(
+              jsonObjects,
+              selectedOption
+            );
             // init renderer
             myChart = new Chart(
               document.getElementById("myChart"),
@@ -222,6 +224,7 @@ const uploadsuccess = document
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
             // console.log(selectedOption);
+            attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
             console.log(attributeType);
 
             if (attributeType[0] === "number") {
@@ -231,9 +234,20 @@ const uploadsuccess = document
                 selectedOption
               );
 
-              myChart.data.labels = boxplotUpdatedtData.updateLabels;
-              myChart.data.datasets[0].data = boxplotUpdatedtData.updateData;
-              myChart.update();
+              // myChart.data.labels = boxplotUpdatedtData.updateLabels;
+              // myChart.data.datasets[0].data = boxplotUpdatedtData.updateData;
+              // myChart.update();
+
+              boxplotInitData = createInitBoxplotData(
+                jsonObjects,
+                selectedOption
+              );
+              // update renderer
+              myChart.destroy();
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                boxplotInitData.initConfig
+              );
             } else {
               // get updated data
               const chartUpdatedtData = createUpdatedChartData(
@@ -241,9 +255,17 @@ const uploadsuccess = document
                 selectedOption
               );
 
-              myChart.data.labels = chartUpdatedtData.updateLabels;
-              myChart.data.datasets[0].data = chartUpdatedtData.updateData;
-              myChart.update();
+              //   myChart.data.labels = chartUpdatedtData.updateLabels;
+              //   myChart.data.datasets[0].data = chartUpdatedtData.updateData;
+              //   myChart.update();
+
+              chartInitData = createInitChartData(jsonObjects, selectedOption);
+              // update renderer
+              myChart.destroy();
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                chartInitData.initConfig
+              );
             }
 
             // update map data
@@ -438,6 +460,7 @@ function createInitBoxplotData(loadeddata, grpoption) {
     return item[grpoption];
   });
   const myLabs = grpoption;
+  console.log(myLabs);
 
   // chart js setup
   const data = {
@@ -711,15 +734,37 @@ function getLayerGeomTypes(geojsondata) {
 // get attribute data type from json
 function getAttributeTypeJson(jsondata, attribute) {
   let uniqueTypes;
+  const re = new RegExp(/^-?[0-9]{1,}$|^[0-9]{1,}\.[0-9]{1,}$/, "g");
   if ("features" in jsondata) {
     uniqueTypes = [
       ...new Set(
-        jsondata.features.map((feature) => typeof feature.properties[attribute])
+        jsondata.features.map((feature) => {
+          const currPropGeojson = String(feature.properties[attribute]);
+          const checkNumGeojson = currPropGeojson.match(re);
+          // console.log(`Regex match: ${checkNumGeojson}`);
+          if (checkNumGeojson) {
+            return "number";
+          } else {
+            return typeof currPropGeojson;
+          }
+        })
       ),
     ];
   } else {
     uniqueTypes = [
-      ...new Set(jsondata.map((feature) => typeof feature[attribute])),
+      ...new Set(
+        jsondata.map((feature) => {
+          const currProp = String(feature[attribute]);
+          const checkNum = currProp.match(re);
+          // console.log(`Regex match: ${checkNum}`);
+          // console.log(`Value for match: ${currProp}`);
+          if (checkNum) {
+            return "number";
+          } else {
+            return typeof currProp;
+          }
+        })
+      ),
     ];
   }
 
