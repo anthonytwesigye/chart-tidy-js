@@ -1,5 +1,7 @@
 // load tidy JS
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
+// global objets
+var mapData;
 
 // pushing the data outside: challenge it cannot feed the chart as it is a promise from tidy js aggregation
 
@@ -192,33 +194,102 @@ const uploadsuccess = document
           // initial selection
           let selectedOption = dropdownData[0];
           console.log(selectedOption);
+          let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
+          // init chart variable
+          let myChart;
 
-          let chartInitData = createInitChartData(jsonObjects, selectedOption);
-
-          // init renderer
-          const myChart = new Chart(
-            document.getElementById("myChart"),
-            chartInitData.initConfig
-          );
+          if (attributeType[0] === "number") {
+            let boxplotInitData = createInitBoxplotData(
+              jsonObjects,
+              selectedOption
+            );
+            // init renderer
+            myChart = new Chart(
+              document.getElementById("myChart"),
+              boxplotInitData.initConfig
+            );
+          } else {
+            let chartInitData = createInitChartData(
+              jsonObjects,
+              selectedOption
+            );
+            // init renderer
+            myChart = new Chart(
+              document.getElementById("myChart"),
+              chartInitData.initConfig
+            );
+          }
 
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
             // console.log(selectedOption);
+            attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
+            console.log(attributeType);
 
-            // get updated data
-            const chartUpdatedtData = createUpdatedChartData(
-              jsonObjects,
+            if (attributeType[0] === "number") {
+              // get updated data
+              const boxplotUpdatedtData = createUpdatedBoxplotData(
+                jsonObjects,
+                selectedOption
+              );
+
+              // myChart.data.labels = boxplotUpdatedtData.updateLabels;
+              // myChart.data.datasets[0].data = boxplotUpdatedtData.updateData;
+              // myChart.update();
+
+              boxplotInitData = createInitBoxplotData(
+                jsonObjects,
+                selectedOption
+              );
+              // update renderer
+              myChart.destroy();
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                boxplotInitData.initConfig
+              );
+            } else {
+              // get updated data
+              const chartUpdatedtData = createUpdatedChartData(
+                jsonObjects,
+                selectedOption
+              );
+
+              //   myChart.data.labels = chartUpdatedtData.updateLabels;
+              //   myChart.data.datasets[0].data = chartUpdatedtData.updateData;
+              //   myChart.update();
+
+              chartInitData = createInitChartData(jsonObjects, selectedOption);
+              // update renderer
+              myChart.destroy();
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                chartInitData.initConfig
+              );
+            }
+
+            // update map data
+            const updateUniqAttributeCat = getUniqueCatValues(
+              geojsonData,
               selectedOption
             );
-
-            myChart.data.labels = chartUpdatedtData.updateLabels;
-            myChart.data.datasets[0].data = chartUpdatedtData.updateData;
-            myChart.update();
+            updateDataOnMap(
+              geojsonData,
+              updateUniqAttributeCat,
+              selectedOption
+            );
           });
           // end of chart
           ////// leaflet map //////
-          const addLayerToMap = addDataToMap(geojsonData);
+          const uniqAttributeCat = getUniqueCatValues(
+            geojsonData,
+            selectedOption
+          );
+          const addLayerToMap = addDataToMap(
+            geojsonData,
+            uniqAttributeCat,
+            selectedOption
+          );
         } catch (e) {
           alert("Unable to read file as GeoJSON.");
         }
@@ -226,7 +297,7 @@ const uploadsuccess = document
     }
   });
 
-//////////////////  Leaflet  //////////////////
+// #region ////////////////  Leaflet  //////////////////
 
 // map initialisation
 var map = L.map("map").setView([-17.926409198529797, 19.777738998189392], 13);
@@ -286,7 +357,10 @@ L.control
   })
   .addTo(map);
 
-//////////////////  FUNCTIONS  //////////////////
+// #endregion
+
+// #region ////////////  FUNCTIONS  //////////////////
+
 // Function to create a popup with feature properties
 function createPopupContent(properties) {
   let content = '<div class="popup-content"><table>';
@@ -333,6 +407,84 @@ function createInitChartData(loadeddata, grpoption) {
     data,
     options: {
       scales: {
+        x: {
+          grid: {
+            drawOnChartArea: false,
+          },
+        },
+        y: {
+          beginAtZero: true,
+        },
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (tooltipItem) => {
+              //   console.log(tooltipItem.datasetIndex);
+              //   console.log(tooltipItem.dataIndex);
+              //   console.log(tooltipItem.chart.data.datasets[0]);
+              //   reducing
+              const arrData = tooltipItem.chart.data.datasets[0].data;
+              const dataSum = arrData.reduce((a, b) => a + b, 0);
+              const dataLab = (
+                (tooltipItem.chart.data.datasets[0].data[
+                  tooltipItem.dataIndex
+                ] /
+                  dataSum) *
+                100
+              ).toFixed(1);
+              return ` ${dataLab} %, Count: ${
+                tooltipItem.chart.data.datasets[0].data[tooltipItem.dataIndex]
+              }`;
+            },
+            // afterTitle: (context) => {
+            //   return "--------";
+            // },
+          },
+        },
+      },
+    },
+  };
+
+  const dataForChart = { initConfig: config };
+
+  return dataForChart;
+}
+
+// function for preparing initial boxplot data
+function createInitBoxplotData(loadeddata, grpoption) {
+  // console.log(loadeddata);
+
+  //  chart JS starts here
+  const myData = loadeddata.map(function (item) {
+    return item[grpoption];
+  });
+  const myLabs = grpoption;
+  console.log(myLabs);
+
+  // chart js setup
+  const data = {
+    labels: myLabs,
+    datasets: [
+      {
+        label: "",
+        data: [myData],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // config
+  const config = {
+    type: "boxplot",
+    data,
+    options: {
+      scales: {
+        x: {
+          grid: {
+            drawOnChartArea: false,
+          },
+        },
         y: {
           beginAtZero: true,
         },
@@ -369,23 +521,130 @@ function createUpdatedChartData(loadeddata, grpoption) {
   return dataForChart;
 }
 
-// function for adding data to map
-function addDataToMap(inputData) {
-  const mapData = L.geoJSON(inputData, {
-    onEachFeature: function (feature, layer) {
-      if (feature.properties) {
-        layer.bindPopup(createPopupContent(feature.properties), {
-          autoPan: true,
-          maxHeight: 300, // Set max height for the popup
-        });
-        layer.on("click", function () {
-          this.openPopup();
-        });
-      }
-    },
-  }).addTo(map);
+// function for preparing initial chart data
+function createUpdatedBoxplotData(loadeddata, grpoption) {
+  //  update chart JS
+  let myDataUpdated = loadeddata.map(function (item) {
+    return item[grpoption];
+  });
+  let myLabsUpdated = grpoption;
 
-  map.fitBounds(mapData.getBounds());
+  const dataForChart = {
+    updateLabels: myLabsUpdated,
+    updateData: myDataUpdated,
+  };
+
+  return dataForChart;
+}
+
+// function for adding data to map
+function addDataToMap(inputData, attributecats, mapattribute) {
+  //get layer type
+  const layerGeomType = getLayerGeomTypes(inputData)[0];
+
+  if (layerGeomType === "Point" || layerGeomType === "MultiPoint") {
+    /*const*/ mapData = L.geoJSON(inputData, {
+      pointToLayer: function (feature, latlng) {
+        const currColor = getPropColor(
+          attributecats,
+          feature.properties[mapattribute]
+        );
+        return L.marker(latlng, {
+          icon: colorMarker(currColor),
+        });
+      },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(createPopupContent(feature.properties), {
+            autoPan: true,
+            maxHeight: 300, // Set max height for the popup
+          });
+          layer.on("click", function () {
+            this.openPopup();
+          });
+        }
+      },
+    }).addTo(map);
+    map.fitBounds(mapData.getBounds());
+  } else {
+    /*const*/ mapData = L.geoJSON(inputData, {
+      onEachFeature: function (feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(createPopupContent(feature.properties), {
+            autoPan: true,
+            maxHeight: 300, // Set max height for the popup
+          });
+          layer.on("click", function () {
+            this.openPopup();
+          });
+        }
+      },
+      style: function (feature) {
+        const currpolColor = getPropColor(
+          attributecats,
+          feature.properties[mapattribute]
+        );
+        // console.log(currpolColor);
+        const currStyle = {
+          fillColor: currpolColor,
+          weight: 0.1,
+          opacity: 1,
+          color: "white",
+          dashArray: "",
+          fillOpacity: 0.7,
+        };
+        return currStyle;
+      },
+    }).addTo(map);
+    map.fitBounds(mapData.getBounds());
+  }
+}
+function updateDataOnMap(inputData, attributecats, mapattribute) {
+  //get layer type
+  const layerGeomType = getLayerGeomTypes(inputData)[0];
+
+  if (layerGeomType === "Point" || layerGeomType === "MultiPoint") {
+    // recreate the layer as other options did not work for markers
+    mapData = L.geoJSON(inputData, {
+      pointToLayer: function (feature, latlng) {
+        const currColor = getPropColor(
+          attributecats,
+          feature.properties[mapattribute]
+        );
+        return L.marker(latlng, {
+          icon: colorMarker(currColor),
+        });
+      },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(createPopupContent(feature.properties), {
+            autoPan: true,
+            maxHeight: 300, // Set max height for the popup
+          });
+          layer.on("click", function () {
+            this.openPopup();
+          });
+        }
+      },
+    }).addTo(map);
+  } else {
+    mapData.setStyle(function (feature) {
+      const currpolColor = getPropColor(
+        attributecats,
+        feature.properties[mapattribute]
+      );
+      // console.log(currpolColor);
+      const currStyle = {
+        fillColor: currpolColor,
+        weight: 0.1,
+        opacity: 1,
+        color: "white",
+        dashArray: "",
+        fillOpacity: 0.7,
+      };
+      return currStyle;
+    });
+  }
 }
 
 // function for getting unique values for a column of geojson data
@@ -456,9 +715,79 @@ function getPropColor(uniqarray, prop) {
         return { data: entry, color: colorRamp[i] };
         break;
       default:
-        return { data: entry, color: colorRamp[colorRamp.length] };
+        return { data: entry, color: colorRamp[colorRamp.length - 1] };
     }
   });
 
   return colorsForProperties[uniqarray.indexOf(prop)].color;
 }
+
+// function get layer geometry types
+function getLayerGeomTypes(geojsondata) {
+  const uniqueTypes = [
+    ...new Set(geojsondata.features.map((feature) => feature.geometry.type)),
+  ];
+
+  return uniqueTypes;
+}
+
+// get attribute data type from json
+function getAttributeTypeJson(jsondata, attribute) {
+  let uniqueTypes;
+  const re = new RegExp(/^-?[0-9]{1,}$|^[0-9]{1,}\.[0-9]{1,}$/, "g");
+  if ("features" in jsondata) {
+    uniqueTypes = [
+      ...new Set(
+        jsondata.features.map((feature) => {
+          const currPropGeojson = String(feature.properties[attribute]);
+          const checkNumGeojson = currPropGeojson.match(re);
+          // console.log(`Regex match: ${checkNumGeojson}`);
+          if (checkNumGeojson) {
+            return "number";
+          } else {
+            return typeof currPropGeojson;
+          }
+        })
+      ),
+    ];
+  } else {
+    uniqueTypes = [
+      ...new Set(
+        jsondata.map((feature) => {
+          const currProp = String(feature[attribute]);
+          const checkNum = currProp.match(re);
+          // console.log(`Regex match: ${checkNum}`);
+          // console.log(`Value for match: ${currProp}`);
+          if (checkNum) {
+            return "number";
+          } else {
+            return typeof currProp;
+          }
+        })
+      ),
+    ];
+  }
+
+  return uniqueTypes;
+}
+
+// the function creates colorful svg
+function colorMarker(color) {
+  const svgTemplate = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="marker">
+      <path fill-opacity=".25" d="M16 32s1.427-9.585 3.761-12.025c4.595-4.805 8.685-.99 8.685-.99s4.044 3.964-.526 8.743C25.514 30.245 16 32 16 32z"/>
+      <path stroke="#fff" fill="${color}" d="M15.938 32S6 17.938 6 11.938C6 .125 15.938 0 15.938 0S26 .125 26 11.875C26 18.062 15.938 32 15.938 32zM16 6a4 4 0 100 8 4 4 0 000-8z"/>
+    </svg>`;
+
+  const icon = L.divIcon({
+    className: "marker",
+    html: svgTemplate,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30],
+  });
+
+  return icon;
+}
+
+// #endregion
