@@ -459,7 +459,7 @@ function createInitBoxplotData(loadeddata, grpoption) {
   const myData = loadeddata.map(function (item) {
     return item[grpoption];
   });
-  const myLabs = grpoption;
+  const myLabs = [grpoption];
   console.log(myLabs);
 
   // chart js setup
