@@ -2,6 +2,7 @@
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 // global objets
 var mapData;
+let chartStatus = Chart.getChart("myChart"); // <canvas> id
 
 // pushing the data outside: challenge it cannot feed the chart as it is a promise from tidy js aggregation
 
@@ -48,6 +49,11 @@ const uploadsuccess = document
           // init chart variable
           let myChart;
 
+          chartStatus = Chart.getChart("myChart"); // <canvas> id
+          if (chartStatus != undefined) {
+            chartStatus.destroy();
+          }
+
           if (attributeType[0] === "number") {
             let boxplotInitData = createInitBoxplotData(
               answer.data,
@@ -76,6 +82,11 @@ const uploadsuccess = document
             // console.log(selectedOption);
             attributeType = getAttributeTypeJson(answer.data, selectedOption);
             console.log(`Attribute: ${selectedOption}, Type: ${attributeType}`);
+            // remove old chart before creating a new one
+            chartStatus = Chart.getChart("myChart"); // <canvas> id
+            if (chartStatus != undefined) {
+              chartStatus.destroy();
+            }
 
             if (attributeType[0] === "number") {
               // get updated data
@@ -89,7 +100,6 @@ const uploadsuccess = document
                 selectedOption
               );
               // update renderer
-              myChart.destroy();
               myChart = new Chart(
                 document.getElementById("myChart"),
                 boxplotInitData.initConfig
@@ -102,7 +112,6 @@ const uploadsuccess = document
               );
               chartInitData = createInitChartData(answer.data, selectedOption);
               // update renderer
-              myChart.destroy();
               myChart = new Chart(
                 document.getElementById("myChart"),
                 chartInitData.initConfig
@@ -111,6 +120,12 @@ const uploadsuccess = document
           });
         },
       });
+
+      document.getElementById("UploadFile").value = "";
+      // remove chart
+      if (chartStatus != undefined) {
+        chartStatus.destroy();
+      }
     }
 
     // Handle excel file
@@ -175,6 +190,11 @@ const uploadsuccess = document
         // init chart variable
         let myChart;
 
+        chartStatus = Chart.getChart("myChart"); // <canvas> id
+        if (chartStatus != undefined) {
+          chartStatus.destroy();
+        }
+
         if (attributeType[0] === "number") {
           let boxplotInitData = createInitBoxplotData(
             jsonObjects,
@@ -201,6 +221,11 @@ const uploadsuccess = document
           attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
           console.log(attributeType);
 
+          chartStatus = Chart.getChart("myChart"); // <canvas> id
+          if (chartStatus != undefined) {
+            chartStatus.destroy();
+          }
+
           if (attributeType[0] === "number") {
             // get updated data
             const boxplotUpdatedtData = createUpdatedBoxplotData(
@@ -217,7 +242,6 @@ const uploadsuccess = document
               selectedOption
             );
             // update renderer
-            myChart.destroy();
             myChart = new Chart(
               document.getElementById("myChart"),
               boxplotInitData.initConfig
@@ -235,7 +259,6 @@ const uploadsuccess = document
 
             chartInitData = createInitChartData(jsonObjects, selectedOption);
             // update renderer
-            myChart.destroy();
             myChart = new Chart(
               document.getElementById("myChart"),
               chartInitData.initConfig
@@ -289,6 +312,11 @@ const uploadsuccess = document
           // init chart variable
           let myChart;
 
+          chartStatus = Chart.getChart("myChart"); // <canvas> id
+          if (chartStatus != undefined) {
+            chartStatus.destroy();
+          }
+
           if (attributeType[0] === "number") {
             let boxplotInitData = createInitBoxplotData(
               jsonObjects,
@@ -318,6 +346,11 @@ const uploadsuccess = document
             attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
             console.log(attributeType);
 
+            chartStatus = Chart.getChart("myChart"); // <canvas> id
+            if (chartStatus != undefined) {
+              chartStatus.destroy();
+            }
+
             if (attributeType[0] === "number") {
               // get updated data
               const boxplotUpdatedtData = createUpdatedBoxplotData(
@@ -334,7 +367,6 @@ const uploadsuccess = document
                 selectedOption
               );
               // update renderer
-              myChart.destroy();
               myChart = new Chart(
                 document.getElementById("myChart"),
                 boxplotInitData.initConfig
@@ -352,7 +384,6 @@ const uploadsuccess = document
 
               chartInitData = createInitChartData(jsonObjects, selectedOption);
               // update renderer
-              myChart.destroy();
               myChart = new Chart(
                 document.getElementById("myChart"),
                 chartInitData.initConfig
