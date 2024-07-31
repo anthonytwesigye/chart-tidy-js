@@ -2,6 +2,7 @@
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 // global objets
 var mapData;
+let chartStatus = Chart.getChart("myChart"); // <canvas> id
 
 // pushing the data outside: challenge it cannot feed the chart as it is a promise from tidy js aggregation
 
@@ -43,32 +44,88 @@ const uploadsuccess = document
 
           // initial selection
           let selectedOption = dropdownData[0];
+          // console.log(`Selected option: ${selectedOption}`);
+          let attributeType = getAttributeTypeJson(answer.data, selectedOption);
+          // init chart variable
+          let myChart;
 
-          let chartInitData = createInitChartData(answer.data, selectedOption);
+          chartStatus = Chart.getChart("myChart"); // <canvas> id
+          if (chartStatus != undefined) {
+            chartStatus.destroy();
+          }
 
-          // init renderer
-          const myChart = new Chart(
-            document.getElementById("myChart"),
-            chartInitData.initConfig
-          );
+          if (attributeType[0] === "number") {
+            let boxplotInitData = createInitBoxplotData(
+              answer.data,
+              selectedOption
+            );
+            // init renderer
+            myChart = new Chart(
+              document.getElementById("myChart"),
+              boxplotInitData.initConfig
+            );
+          } else {
+            let chartInitData = createInitChartData(
+              answer.data,
+              selectedOption
+            );
+            // init renderer
+            myChart = new Chart(
+              document.getElementById("myChart"),
+              chartInitData.initConfig
+            );
+          }
 
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
             // console.log(selectedOption);
+            attributeType = getAttributeTypeJson(answer.data, selectedOption);
+            console.log(`Attribute: ${selectedOption}, Type: ${attributeType}`);
+            // remove old chart before creating a new one
+            chartStatus = Chart.getChart("myChart"); // <canvas> id
+            if (chartStatus != undefined) {
+              chartStatus.destroy();
+            }
 
-            // get updated data
-            const chartUpdatedtData = createUpdatedChartData(
-              answer.data,
-              selectedOption
-            );
+            if (attributeType[0] === "number") {
+              // get updated data
+              const boxplotUpdatedtData = createUpdatedBoxplotData(
+                answer.data,
+                selectedOption
+              );
 
-            myChart.data.labels = chartUpdatedtData.updateLabels;
-            myChart.data.datasets[0].data = chartUpdatedtData.updateData;
-            myChart.update();
+              boxplotInitData = createInitBoxplotData(
+                answer.data,
+                selectedOption
+              );
+              // update renderer
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                boxplotInitData.initConfig
+              );
+            } else {
+              // get updated data
+              const chartUpdatedtData = createUpdatedChartData(
+                answer.data,
+                selectedOption
+              );
+              chartInitData = createInitChartData(answer.data, selectedOption);
+              // update renderer
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                chartInitData.initConfig
+              );
+            }
           });
         },
       });
+
+      document.getElementById("UploadFile").value = "";
+      // remove chart
+      if (chartStatus != undefined) {
+        chartStatus.destroy();
+      }
     }
 
     // Handle excel file
@@ -128,28 +185,85 @@ const uploadsuccess = document
         // initial selection
         let selectedOption = dropdownData[0];
 
-        let chartInitData = createInitChartData(jsonObjects, selectedOption);
+        // console.log(`Selected option: ${selectedOption}`);
+        let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
+        // init chart variable
+        let myChart;
 
-        // init renderer
-        const myChart = new Chart(
-          document.getElementById("myChart"),
-          chartInitData.initConfig
-        );
+        chartStatus = Chart.getChart("myChart"); // <canvas> id
+        if (chartStatus != undefined) {
+          chartStatus.destroy();
+        }
+
+        if (attributeType[0] === "number") {
+          let boxplotInitData = createInitBoxplotData(
+            jsonObjects,
+            selectedOption
+          );
+          // init renderer
+          myChart = new Chart(
+            document.getElementById("myChart"),
+            boxplotInitData.initConfig
+          );
+        } else {
+          let chartInitData = createInitChartData(jsonObjects, selectedOption);
+          // init renderer
+          myChart = new Chart(
+            document.getElementById("myChart"),
+            chartInitData.initConfig
+          );
+        }
 
         // event listener on the dropdown
         sel.addEventListener("change", function (optiondata) {
           selectedOption = sel.value;
           // console.log(selectedOption);
+          attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
+          console.log(attributeType);
 
-          // get updated data
-          const chartUpdatedtData = createUpdatedChartData(
-            jsonObjects,
-            selectedOption
-          );
+          chartStatus = Chart.getChart("myChart"); // <canvas> id
+          if (chartStatus != undefined) {
+            chartStatus.destroy();
+          }
 
-          myChart.data.labels = chartUpdatedtData.updateLabels;
-          myChart.data.datasets[0].data = chartUpdatedtData.updateData;
-          myChart.update();
+          if (attributeType[0] === "number") {
+            // get updated data
+            const boxplotUpdatedtData = createUpdatedBoxplotData(
+              jsonObjects,
+              selectedOption
+            );
+
+            // myChart.data.labels = boxplotUpdatedtData.updateLabels;
+            // myChart.data.datasets[0].data = boxplotUpdatedtData.updateData;
+            // myChart.update();
+
+            boxplotInitData = createInitBoxplotData(
+              jsonObjects,
+              selectedOption
+            );
+            // update renderer
+            myChart = new Chart(
+              document.getElementById("myChart"),
+              boxplotInitData.initConfig
+            );
+          } else {
+            // get updated data
+            const chartUpdatedtData = createUpdatedChartData(
+              jsonObjects,
+              selectedOption
+            );
+
+            //   myChart.data.labels = chartUpdatedtData.updateLabels;
+            //   myChart.data.datasets[0].data = chartUpdatedtData.updateData;
+            //   myChart.update();
+
+            chartInitData = createInitChartData(jsonObjects, selectedOption);
+            // update renderer
+            myChart = new Chart(
+              document.getElementById("myChart"),
+              chartInitData.initConfig
+            );
+          }
         });
 
         ////// end of chart //////
@@ -193,10 +307,15 @@ const uploadsuccess = document
 
           // initial selection
           let selectedOption = dropdownData[0];
-          console.log(selectedOption);
+          // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
           // init chart variable
           let myChart;
+
+          chartStatus = Chart.getChart("myChart"); // <canvas> id
+          if (chartStatus != undefined) {
+            chartStatus.destroy();
+          }
 
           if (attributeType[0] === "number") {
             let boxplotInitData = createInitBoxplotData(
@@ -227,6 +346,11 @@ const uploadsuccess = document
             attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
             console.log(attributeType);
 
+            chartStatus = Chart.getChart("myChart"); // <canvas> id
+            if (chartStatus != undefined) {
+              chartStatus.destroy();
+            }
+
             if (attributeType[0] === "number") {
               // get updated data
               const boxplotUpdatedtData = createUpdatedBoxplotData(
@@ -243,7 +367,6 @@ const uploadsuccess = document
                 selectedOption
               );
               // update renderer
-              myChart.destroy();
               myChart = new Chart(
                 document.getElementById("myChart"),
                 boxplotInitData.initConfig
@@ -261,7 +384,6 @@ const uploadsuccess = document
 
               chartInitData = createInitChartData(jsonObjects, selectedOption);
               // update renderer
-              myChart.destroy();
               myChart = new Chart(
                 document.getElementById("myChart"),
                 chartInitData.initConfig
@@ -459,15 +581,16 @@ function createInitBoxplotData(loadeddata, grpoption) {
   const myData = loadeddata.map(function (item) {
     return item[grpoption];
   });
-  const myLabs = grpoption;
-  console.log(myLabs);
+  const myLabs = [grpoption];
 
   // chart js setup
   const data = {
     labels: myLabs,
     datasets: [
       {
-        label: "",
+        label: grpoption,
+        outlierColor: "#999999",
+        itemRadius: 5,
         data: [myData],
         borderWidth: 1,
       },
