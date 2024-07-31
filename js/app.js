@@ -769,11 +769,11 @@ function updateDataOnMap(inputData, attributecats, mapattribute) {
       // console.log(currpolColor);
       const currStyle = {
         fillColor: currpolColor,
-        weight: 0.1,
+        weight: 1,
         opacity: 1,
-        color: "white",
+        color: currpolColor,
         dashArray: "",
-        fillOpacity: 0.7,
+        fillOpacity: 1,
       };
       return currStyle;
     });
