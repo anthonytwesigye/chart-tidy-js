@@ -4,11 +4,21 @@ const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 var mapData;
 let chartStatus = Chart.getChart("myChart"); // <canvas> id
 
-// pushing the data outside: challenge it cannot feed the chart as it is a promise from tidy js aggregation
+// on file input change reset the selection dropdown
 
+document.getElementById("UploadFile").addEventListener("input", () => {
+  const selectionDrop = document.getElementById("aggregateid");
+
+  if (selectionDrop) {
+    selectionDrop.innerHTML = null;
+  }
+});
+
+// pushing the data outside: challenge it cannot feed the chart as it is a promise from tidy js aggregation
 // const allData = [];
 
 // event listener on the button to get the data
+
 const uploadsuccess = document
   .getElementById("uploadsuccess")
   .addEventListener("click", () => {
