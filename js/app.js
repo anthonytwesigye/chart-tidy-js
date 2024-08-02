@@ -676,7 +676,7 @@ function addDataToMap(inputData, attributecats, mapattribute) {
   const layerGeomType = getLayerGeomTypes(inputData)[0];
 
   if (layerGeomType === "Point" || layerGeomType === "MultiPoint") {
-    /*const*/ mapData = L.geoJSON(inputData, {
+    mapData = L.geoJSON(inputData, {
       pointToLayer: function (feature, latlng) {
         const currColor = getPropColor(
           attributecats,
@@ -700,7 +700,7 @@ function addDataToMap(inputData, attributecats, mapattribute) {
     }).addTo(map);
     map.fitBounds(mapData.getBounds());
   } else {
-    /*const*/ mapData = L.geoJSON(inputData, {
+    mapData = L.geoJSON(inputData, {
       onEachFeature: function (feature, layer) {
         if (feature.properties) {
           layer.bindPopup(createPopupContent(feature.properties), {
