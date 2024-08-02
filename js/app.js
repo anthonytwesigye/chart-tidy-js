@@ -1,8 +1,13 @@
 // load tidy JS
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
-// global objets
+// global objects and variables
+// init chart variable
+let myChart;
+let duplicatesChart;
+
 var mapData;
 let chartStatus = Chart.getChart("myChart"); // <canvas> id
+let guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
 
 // on file input change reset the selection dropdown
 
@@ -56,8 +61,6 @@ const uploadsuccess = document
           let selectedOption = dropdownData[0];
           // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(answer.data, selectedOption);
-          // init chart variable
-          let myChart;
 
           chartStatus = Chart.getChart("myChart"); // <canvas> id
           if (chartStatus != undefined) {
@@ -85,6 +88,17 @@ const uploadsuccess = document
               chartInitData.initConfig
             );
           }
+
+          // guage
+          guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+          if (guageChartStatus != undefined) {
+            guageChartStatus.destroy();
+          }
+          let guageData = createGuageChartData(answer.data, selectedOption);
+          duplicatesChart = new Chart(
+            document.getElementById("duplicatesChart"),
+            guageData.initConfig
+          );
 
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
@@ -127,6 +141,16 @@ const uploadsuccess = document
                 chartInitData.initConfig
               );
             }
+            // guage
+            guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+            if (guageChartStatus != undefined) {
+              guageChartStatus.destroy();
+            }
+            let guageData = createGuageChartData(answer.data, selectedOption);
+            duplicatesChart = new Chart(
+              document.getElementById("duplicatesChart"),
+              guageData.initConfig
+            );
           });
         },
       });
@@ -197,8 +221,6 @@ const uploadsuccess = document
 
         // console.log(`Selected option: ${selectedOption}`);
         let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
-        // init chart variable
-        let myChart;
 
         chartStatus = Chart.getChart("myChart"); // <canvas> id
         if (chartStatus != undefined) {
@@ -223,6 +245,17 @@ const uploadsuccess = document
             chartInitData.initConfig
           );
         }
+
+        // guage
+        guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+        if (guageChartStatus != undefined) {
+          guageChartStatus.destroy();
+        }
+        let guageData = createGuageChartData(jsonObjects, selectedOption);
+        duplicatesChart = new Chart(
+          document.getElementById("duplicatesChart"),
+          guageData.initConfig
+        );
 
         // event listener on the dropdown
         sel.addEventListener("change", function (optiondata) {
@@ -274,6 +307,16 @@ const uploadsuccess = document
               chartInitData.initConfig
             );
           }
+          // guage
+          guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+          if (guageChartStatus != undefined) {
+            guageChartStatus.destroy();
+          }
+          let guageData = createGuageChartData(jsonObjects, selectedOption);
+          duplicatesChart = new Chart(
+            document.getElementById("duplicatesChart"),
+            guageData.initConfig
+          );
         });
 
         ////// end of chart //////
@@ -319,8 +362,6 @@ const uploadsuccess = document
           let selectedOption = dropdownData[0];
           // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
-          // init chart variable
-          let myChart;
 
           chartStatus = Chart.getChart("myChart"); // <canvas> id
           if (chartStatus != undefined) {
@@ -348,6 +389,17 @@ const uploadsuccess = document
               chartInitData.initConfig
             );
           }
+
+          // guage
+          guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+          if (guageChartStatus != undefined) {
+            guageChartStatus.destroy();
+          }
+          let guageData = createGuageChartData(jsonObjects, selectedOption);
+          duplicatesChart = new Chart(
+            document.getElementById("duplicatesChart"),
+            guageData.initConfig
+          );
 
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
@@ -399,6 +451,17 @@ const uploadsuccess = document
                 chartInitData.initConfig
               );
             }
+
+            // guage
+            guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+            if (guageChartStatus != undefined) {
+              guageChartStatus.destroy();
+            }
+            let guageData = createGuageChartData(jsonObjects, selectedOption);
+            duplicatesChart = new Chart(
+              document.getElementById("duplicatesChart"),
+              guageData.initConfig
+            );
 
             // update map data
             const updateUniqAttributeCat = getUniqueCatValues(
@@ -666,6 +729,74 @@ function createUpdatedBoxplotData(loadeddata, grpoption) {
     updateLabels: myLabsUpdated,
     updateData: myDataUpdated,
   };
+
+  return dataForChart;
+}
+
+// function for handling guage chart data
+function createGuageChartData(loadeddata, grpoption) {
+  const totalcount = loadeddata.length;
+
+  //  tidy JS part
+  const results = tidy(
+    loadeddata,
+    groupBy(grpoption, [summarize({ count: n() })])
+  );
+  const duplicates = [];
+  const uniqueIds = [];
+  // process the data
+  results.forEach(function (item) {
+    if (item["count"] > 1) {
+      duplicates.push(item["count"]);
+    }
+    if (item["count"] < 2) {
+      uniqueIds.push(item["count"]);
+    }
+  });
+
+  const percentDupls = (
+    (duplicates.reduce((a, b) => a + b, 0) / totalcount) *
+    100
+  ).toFixed(1);
+  const percentUnique = ((uniqueIds.length / totalcount) * 100).toFixed(1);
+
+  // console.log(`percentDupls: ${percentDupls}`);
+  // console.log(`percentUnique: ${percentUnique}`);
+
+  //  chart JS starts here
+  const myData = [percentUnique, percentDupls];
+  const myLabs = ["% Unique", "% Non-Unique"];
+
+  // chart js setup
+  const data = {
+    labels: myLabs,
+    datasets: [
+      {
+        label: "",
+        data: myData,
+        backgroundColor: ["rgba(75, 192, 192, 0.2)", "rgba(255, 26, 104, 0.2)"],
+        borderColor: ["rgba(75, 192, 192, 1)", "rgba(255, 26, 104, 1)"],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // config
+  const config = {
+    type: "doughnut",
+    data,
+    options: {
+      aspectRation: 0.5,
+      circumference: 180,
+      rotation: 270,
+      radius: "100%",
+      plugins: {
+        legend: false,
+      },
+    },
+  };
+
+  const dataForChart = { initConfig: config };
 
   return dataForChart;
 }
