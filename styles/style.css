@@ -20,3 +20,22 @@ body {
 #aggregateid {
   display: block;
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  width: 50%;
+  background-color: grey;
+  color: white;
+}
+
+/* td:nth-child(even) {
+  background-color: #d6eeee;
+} */
+
+tr:hover {
+  background-color: lightgrey;
+}

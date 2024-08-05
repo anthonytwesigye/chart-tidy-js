@@ -100,6 +100,9 @@ const uploadsuccess = document
             guageData.initConfig
           );
 
+          document.getElementById("duplicatesData").innerHTML =
+            createDuplicatesTable(guageData.duplicatesTData);
+
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
@@ -754,6 +757,11 @@ function createGuageChartData(loadeddata, grpoption) {
     }
   });
 
+  // duplicate summary table data
+  const duplicatesData = results.filter((item) => {
+    return item["count"] > 1;
+  });
+
   const percentDupls = (
     (duplicates.reduce((a, b) => a + b, 0) / totalcount) *
     100
@@ -802,10 +810,31 @@ function createGuageChartData(loadeddata, grpoption) {
       },
     },
   };
-
-  const dataForChart = { initConfig: config };
+  console.log(duplicatesData);
+  const dataForChart = { initConfig: config, duplicatesTData: duplicatesData };
 
   return dataForChart;
+}
+
+function createDuplicatesTable(tabledata) {
+  const summary = `<p> Duplicates summary</p3>`;
+  let tabHead = `<table>
+  <tr>
+    <th>Property</th>
+    <th>Count</th>
+  </tr>`;
+  const tableEnd = "</table>";
+
+  for (let index = 0; index < tabledata.length; index++) {
+    const currentObjVals = Object.values(tabledata[index]);
+
+    tabHead += `<tr>
+    <td>${currentObjVals[0]}</td>
+    <td>${currentObjVals[1]}</td>
+  </tr>`;
+  }
+
+  return summary + tabHead + tableEnd;
 }
 
 // function for adding data to map
