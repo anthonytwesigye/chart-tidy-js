@@ -20,3 +20,29 @@ body {
 #aggregateid {
   display: block;
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  width: 50%;
+  background-color: grey;
+  color: white;
+  position: sticky;
+  top: 0px;
+}
+
+tr {
+  border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+  background-color: lightgrey;
+}
+
+#duplicatestable {
+  max-height: 40vh;
+  overflow-y: scroll;
+}
