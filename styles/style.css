@@ -30,12 +30,19 @@ th {
   width: 50%;
   background-color: grey;
   color: white;
+  position: sticky;
+  top: 0px;
 }
 
-/* td:nth-child(even) {
-  background-color: #d6eeee;
-} */
+tr {
+  border-bottom: 1px solid #ddd;
+}
 
 tr:hover {
   background-color: lightgrey;
+}
+
+#duplicatestable {
+  max-height: 40vh;
+  overflow-y: scroll;
 }

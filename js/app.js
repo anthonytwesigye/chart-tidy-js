@@ -99,7 +99,7 @@ const uploadsuccess = document
             document.getElementById("duplicatesChart"),
             guageData.initConfig
           );
-
+          // add duplicates summary table
           document.getElementById("duplicatesData").innerHTML =
             createDuplicatesTable(guageData.duplicatesTData);
 
@@ -154,6 +154,9 @@ const uploadsuccess = document
               document.getElementById("duplicatesChart"),
               guageData.initConfig
             );
+            // add duplicates summary table
+            document.getElementById("duplicatesData").innerHTML =
+              createDuplicatesTable(guageData.duplicatesTData);
           });
         },
       });
@@ -259,6 +262,9 @@ const uploadsuccess = document
           document.getElementById("duplicatesChart"),
           guageData.initConfig
         );
+        // add duplicates summary table
+        document.getElementById("duplicatesData").innerHTML =
+          createDuplicatesTable(guageData.duplicatesTData);
 
         // event listener on the dropdown
         sel.addEventListener("change", function (optiondata) {
@@ -320,6 +326,9 @@ const uploadsuccess = document
             document.getElementById("duplicatesChart"),
             guageData.initConfig
           );
+          // add duplicates summary table
+          document.getElementById("duplicatesData").innerHTML =
+            createDuplicatesTable(guageData.duplicatesTData);
         });
 
         ////// end of chart //////
@@ -403,6 +412,9 @@ const uploadsuccess = document
             document.getElementById("duplicatesChart"),
             guageData.initConfig
           );
+          // add duplicates summary table
+          document.getElementById("duplicatesData").innerHTML =
+            createDuplicatesTable(guageData.duplicatesTData);
 
           // event listener on the dropdown
           sel.addEventListener("change", function (optiondata) {
@@ -465,6 +477,9 @@ const uploadsuccess = document
               document.getElementById("duplicatesChart"),
               guageData.initConfig
             );
+            // add duplicates summary table
+            document.getElementById("duplicatesData").innerHTML =
+              createDuplicatesTable(guageData.duplicatesTData);
 
             // update map data
             const updateUniqAttributeCat = getUniqueCatValues(
@@ -818,12 +833,12 @@ function createGuageChartData(loadeddata, grpoption) {
 
 function createDuplicatesTable(tabledata) {
   const summary = `<p> Duplicates summary</p3>`;
-  let tabHead = `<table>
+  let tabHead = `<div id="duplicatestable"><table>
   <tr>
     <th>Property</th>
     <th>Count</th>
   </tr>`;
-  const tableEnd = "</table>";
+  const tableEnd = "</table></div>";
 
   for (let index = 0; index < tabledata.length; index++) {
     const currentObjVals = Object.values(tabledata[index]);
