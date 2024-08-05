@@ -777,6 +777,7 @@ function createGuageChartData(loadeddata, grpoption) {
         backgroundColor: ["rgba(75, 192, 192, 0.2)", "rgba(255, 26, 104, 0.2)"],
         borderColor: ["rgba(75, 192, 192, 1)", "rgba(255, 26, 104, 1)"],
         borderWidth: 1,
+        hoverOffset: 35,
       },
     ],
   };
@@ -792,6 +793,12 @@ function createGuageChartData(loadeddata, grpoption) {
       radius: "100%",
       plugins: {
         legend: false,
+      },
+      layout: {
+        padding: {
+          left: 10,
+          right: 10,
+        },
       },
     },
   };
