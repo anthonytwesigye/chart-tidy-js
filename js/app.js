@@ -1,6 +1,9 @@
 // load tidy JS
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 // global objects and variables
+
+let dataAttributeProps;
+
 // init chart variable
 let myChart;
 let duplicatesChart;
@@ -47,18 +50,18 @@ const uploadsuccess = document
           ////////////////// create dropdown for aggregation //////////////////
           const sel = document.getElementById("aggregateid");
 
-          const dropdownData = Object.keys(answer.data[0]);
+          dataAttributeProps = Object.keys(answer.data[0]);
 
-          for (let j = 0; j < dropdownData.length; j++) {
+          for (let j = 0; j < dataAttributeProps.length; j++) {
             const opt = document.createElement("option");
-            opt.value = dropdownData[j];
-            opt.text = dropdownData[j];
+            opt.value = dataAttributeProps[j];
+            opt.text = dataAttributeProps[j];
 
             sel.add(opt);
           }
 
           // initial selection
-          let selectedOption = dropdownData[0];
+          let selectedOption = dataAttributeProps[0];
           // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(answer.data, selectedOption);
 
@@ -212,18 +215,18 @@ const uploadsuccess = document
         ////////////////// create dropdown for aggregation //////////////////
         const sel = document.getElementById("aggregateid");
 
-        const dropdownData = Object.keys(jsonObjects[0]);
+        dataAttributeProps = Object.keys(jsonObjects[0]);
 
-        for (let j = 0; j < dropdownData.length; j++) {
+        for (let j = 0; j < dataAttributeProps.length; j++) {
           const opt = document.createElement("option");
-          opt.value = dropdownData[j];
-          opt.text = dropdownData[j];
+          opt.value = dataAttributeProps[j];
+          opt.text = dataAttributeProps[j];
 
           sel.add(opt);
         }
 
         // initial selection
-        let selectedOption = dropdownData[0];
+        let selectedOption = dataAttributeProps[0];
 
         // console.log(`Selected option: ${selectedOption}`);
         let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
@@ -360,18 +363,18 @@ const uploadsuccess = document
           // create dropdown for aggregation
           const sel = document.getElementById("aggregateid");
 
-          const dropdownData = Object.keys(jsonObjects[0]);
+          dataAttributeProps = Object.keys(jsonObjects[0]);
 
-          for (let j = 0; j < dropdownData.length; j++) {
+          for (let j = 0; j < dataAttributeProps.length; j++) {
             const opt = document.createElement("option");
-            opt.value = dropdownData[j];
-            opt.text = dropdownData[j];
+            opt.value = dataAttributeProps[j];
+            opt.text = dataAttributeProps[j];
 
             sel.add(opt);
           }
 
           // initial selection
-          let selectedOption = dropdownData[0];
+          let selectedOption = dataAttributeProps[0];
           // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
 
