@@ -49,6 +49,8 @@ const uploadsuccess = document
 
           ////////////////// create dropdown for aggregation //////////////////
           const sel = document.getElementById("aggregateid");
+          const fil1 = document.getElementById("filter1id");
+          const fil2 = document.getElementById("filter2id");
 
           dataAttributeProps = Object.keys(answer.data[0]);
 
@@ -59,6 +61,31 @@ const uploadsuccess = document
 
             sel.add(opt);
           }
+
+          dataAttributeProps.forEach((item) => {
+            let filterOpt1 = document.createElement("option");
+            filterOpt1.value = item;
+            filterOpt1.text = item;
+            fil1.add(filterOpt1);
+          });
+
+          // check filter1 option
+          let fil1Option = fil1.value;
+          console.log(fil1Option);
+
+          const fil1Cats = getUniqueAttributeVals(answer.data, fil1Option);
+          const fil1Type = getAttributeTypeJson(answer.data, fil1Option);
+
+          console.log(`Categories: ${fil1Cats}`);
+          console.log(`ColumnType: ${fil1Type}`);
+
+          // for filter 2, it should exlude what is selected in filter 1 like: dataAttributeProps.slice(dataAttributeProps.indexOf('filter1')+1));
+          dataAttributeProps.forEach((item) => {
+            let filterOpt2 = document.createElement("option");
+            filterOpt2.value = item;
+            filterOpt2.text = item;
+            fil2.add(filterOpt2);
+          });
 
           // initial selection
           let selectedOption = dataAttributeProps[0];
@@ -485,7 +512,7 @@ const uploadsuccess = document
               createDuplicatesTable(guageData.duplicatesTData);
 
             // update map data
-            const updateUniqAttributeCat = getUniqueCatValues(
+            const updateUniqAttributeCat = getUniqueAttributeValsGeojson(
               geojsonData,
               selectedOption
             );
@@ -497,7 +524,7 @@ const uploadsuccess = document
           });
           // end of chart
           ////// leaflet map //////
-          const uniqAttributeCat = getUniqueCatValues(
+          const uniqAttributeCat = getUniqueAttributeValsGeojson(
             geojsonData,
             selectedOption
           );
@@ -966,12 +993,18 @@ function updateDataOnMap(inputData, attributecats, mapattribute) {
 }
 
 // function for getting unique values for a column of geojson data
-function getUniqueCatValues(geojsondata, field) {
+function getUniqueAttributeValsGeojson(geojsondata, field) {
   const uniqueCategories = [
     ...new Set(
       geojsondata.features.map((feature) => feature.properties[field])
     ),
   ];
+
+  return uniqueCategories;
+}
+// function for getting unique values for a column of json data
+function getUniqueAttributeVals(jsondata, field) {
+  const uniqueCategories = [...new Set(jsondata.map((item) => item[field]))];
 
   return uniqueCategories;
 }
