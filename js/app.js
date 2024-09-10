@@ -1,6 +1,14 @@
 // load tidy JS
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 // global objects and variables
+
+let initData;
+let analysisData;
+
+let selectedFilterOpts = [];
+
+let dataAttributeProps;
+
 // init chart variable
 let myChart;
 let duplicatesChart;
@@ -47,20 +55,70 @@ const uploadsuccess = document
           ////////////////// create dropdown for aggregation //////////////////
           const sel = document.getElementById("aggregateid");
 
-          const dropdownData = Object.keys(answer.data[0]);
+          dataAttributeProps = Object.keys(answer.data[0]);
 
-          for (let j = 0; j < dropdownData.length; j++) {
+          for (let j = 0; j < dataAttributeProps.length; j++) {
             const opt = document.createElement("option");
-            opt.value = dropdownData[j];
-            opt.text = dropdownData[j];
+            opt.value = dataAttributeProps[j];
+            opt.text = dataAttributeProps[j];
 
             sel.add(opt);
           }
+          initData = answer.data;
+          analysisData = initData;
+          const filterOpts = getUniqueAttributeVals(
+            analysisData,
+            sel.value
+          ).map((item) => {
+            return {
+              value: item,
+              text: item,
+            };
+          });
+
+          // add options to the filter
+          new MultiSelect("#filter1id", {
+            data: filterOpts,
+            placeholder: "Select option",
+            search: true,
+            selectAll: true,
+            listAll: true,
+            max: null,
+            onSelect: function (value, text, element) {
+              // console.log("select:", value);
+              console.log("select:", value);
+              selectedFilterOpts.push(value);
+
+              console.log(`Pushed options: ${selectedFilterOpts}`);
+            },
+            onUnselect: function (value, text, element) {
+              // console.log("un select:", value);
+              selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
+
+              console.log(`Remaining options: ${selectedFilterOpts}`);
+            },
+            onChange: function (value, text, element) {
+              // console.log("change:", value);
+              analysisData = initData.filter((item) => {
+                // item[sel.value].includes(selectedFilterOpts);
+                for (const element of selectedFilterOpts) {
+                  if (item[sel.value].includes(element)) {
+                    return true;
+                  }
+                }
+              });
+
+              console.log(`Num rows: ${analysisData.length}`);
+            },
+          });
 
           // initial selection
-          let selectedOption = dropdownData[0];
+          let selectedOption = dataAttributeProps[0];
           // console.log(`Selected option: ${selectedOption}`);
-          let attributeType = getAttributeTypeJson(answer.data, selectedOption);
+          let attributeType = getAttributeTypeJson(
+            analysisData,
+            selectedOption
+          );
 
           chartStatus = Chart.getChart("myChart"); // <canvas> id
           if (chartStatus != undefined) {
@@ -69,7 +127,7 @@ const uploadsuccess = document
 
           if (attributeType[0] === "number") {
             let boxplotInitData = createInitBoxplotData(
-              answer.data,
+              analysisData,
               selectedOption
             );
             // init renderer
@@ -79,7 +137,7 @@ const uploadsuccess = document
             );
           } else {
             let chartInitData = createInitChartData(
-              answer.data,
+              analysisData,
               selectedOption
             );
             // init renderer
@@ -94,7 +152,7 @@ const uploadsuccess = document
           if (guageChartStatus != undefined) {
             guageChartStatus.destroy();
           }
-          let guageData = createGuageChartData(answer.data, selectedOption);
+          let guageData = createGuageChartData(analysisData, selectedOption);
           duplicatesChart = new Chart(
             document.getElementById("duplicatesChart"),
             guageData.initConfig
@@ -107,7 +165,7 @@ const uploadsuccess = document
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
             // console.log(selectedOption);
-            attributeType = getAttributeTypeJson(answer.data, selectedOption);
+            attributeType = getAttributeTypeJson(analysisData, selectedOption);
             console.log(`Attribute: ${selectedOption}, Type: ${attributeType}`);
             // remove old chart before creating a new one
             chartStatus = Chart.getChart("myChart"); // <canvas> id
@@ -118,12 +176,12 @@ const uploadsuccess = document
             if (attributeType[0] === "number") {
               // get updated data
               const boxplotUpdatedtData = createUpdatedBoxplotData(
-                answer.data,
+                analysisData,
                 selectedOption
               );
 
               boxplotInitData = createInitBoxplotData(
-                answer.data,
+                analysisData,
                 selectedOption
               );
               // update renderer
@@ -134,10 +192,10 @@ const uploadsuccess = document
             } else {
               // get updated data
               const chartUpdatedtData = createUpdatedChartData(
-                answer.data,
+                analysisData,
                 selectedOption
               );
-              chartInitData = createInitChartData(answer.data, selectedOption);
+              chartInitData = createInitChartData(analysisData, selectedOption);
               // update renderer
               myChart = new Chart(
                 document.getElementById("myChart"),
@@ -149,7 +207,7 @@ const uploadsuccess = document
             if (guageChartStatus != undefined) {
               guageChartStatus.destroy();
             }
-            let guageData = createGuageChartData(answer.data, selectedOption);
+            let guageData = createGuageChartData(analysisData, selectedOption);
             duplicatesChart = new Chart(
               document.getElementById("duplicatesChart"),
               guageData.initConfig
@@ -212,18 +270,18 @@ const uploadsuccess = document
         ////////////////// create dropdown for aggregation //////////////////
         const sel = document.getElementById("aggregateid");
 
-        const dropdownData = Object.keys(jsonObjects[0]);
+        dataAttributeProps = Object.keys(jsonObjects[0]);
 
-        for (let j = 0; j < dropdownData.length; j++) {
+        for (let j = 0; j < dataAttributeProps.length; j++) {
           const opt = document.createElement("option");
-          opt.value = dropdownData[j];
-          opt.text = dropdownData[j];
+          opt.value = dataAttributeProps[j];
+          opt.text = dataAttributeProps[j];
 
           sel.add(opt);
         }
 
         // initial selection
-        let selectedOption = dropdownData[0];
+        let selectedOption = dataAttributeProps[0];
 
         // console.log(`Selected option: ${selectedOption}`);
         let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
@@ -360,18 +418,18 @@ const uploadsuccess = document
           // create dropdown for aggregation
           const sel = document.getElementById("aggregateid");
 
-          const dropdownData = Object.keys(jsonObjects[0]);
+          dataAttributeProps = Object.keys(jsonObjects[0]);
 
-          for (let j = 0; j < dropdownData.length; j++) {
+          for (let j = 0; j < dataAttributeProps.length; j++) {
             const opt = document.createElement("option");
-            opt.value = dropdownData[j];
-            opt.text = dropdownData[j];
+            opt.value = dataAttributeProps[j];
+            opt.text = dataAttributeProps[j];
 
             sel.add(opt);
           }
 
           // initial selection
-          let selectedOption = dropdownData[0];
+          let selectedOption = dataAttributeProps[0];
           // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
 
@@ -482,7 +540,7 @@ const uploadsuccess = document
               createDuplicatesTable(guageData.duplicatesTData);
 
             // update map data
-            const updateUniqAttributeCat = getUniqueCatValues(
+            const updateUniqAttributeCat = getUniqueAttributeValsGeojson(
               geojsonData,
               selectedOption
             );
@@ -494,7 +552,7 @@ const uploadsuccess = document
           });
           // end of chart
           ////// leaflet map //////
-          const uniqAttributeCat = getUniqueCatValues(
+          const uniqAttributeCat = getUniqueAttributeValsGeojson(
             geojsonData,
             selectedOption
           );
@@ -825,7 +883,7 @@ function createGuageChartData(loadeddata, grpoption) {
       },
     },
   };
-  console.log(duplicatesData);
+  // console.log(duplicatesData);
   const dataForChart = { initConfig: config, duplicatesTData: duplicatesData };
 
   return dataForChart;
@@ -963,12 +1021,18 @@ function updateDataOnMap(inputData, attributecats, mapattribute) {
 }
 
 // function for getting unique values for a column of geojson data
-function getUniqueCatValues(geojsondata, field) {
+function getUniqueAttributeValsGeojson(geojsondata, field) {
   const uniqueCategories = [
     ...new Set(
       geojsondata.features.map((feature) => feature.properties[field])
     ),
   ];
+
+  return uniqueCategories;
+}
+// function for getting unique values for a column of json data
+function getUniqueAttributeVals(jsondata, field) {
+  const uniqueCategories = [...new Set(jsondata.map((item) => item[field]))];
 
   return uniqueCategories;
 }

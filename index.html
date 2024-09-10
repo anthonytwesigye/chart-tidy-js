@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="libs/leaflet.css" />
     <link rel="stylesheet" href="libs/leaflet-measure.css" />
     <link rel="stylesheet" href="libs/leaflet.draw.css" />
+    <link rel="stylesheet" href="libs/MultiSelect.css" />
+    <style>
+      select {
+        width: 20em;
+      }
+    </style>
 
     <title>Chart JS and leaflet</title>
   </head>
@@ -35,7 +41,13 @@
             </div>
           </div>
           <div class="card">
-            <div class="card-body"></div>
+            <div class="card-body">
+              <div id="filter1">
+                <label for="filter1id">Filter data</label>
+                <select id="filter1id" name="filter1id"></select>
+              </div>
+              <div id="filter2" class="col"></div>
+            </div>
           </div>
         </div>
         <div class="col-xl-7 col-lg-6">
@@ -73,6 +85,7 @@
     <script src="libs/leaflet.draw.js"></script>
     <script src="libs/turf.min.js"></script>
     <script src="../libs/index.umd.min.js"></script>
+    <script src="libs/MultiSelect.js"></script>
     <!-- app -->
     <script src="js/app.js"></script>
   </body>
