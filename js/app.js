@@ -2,6 +2,7 @@
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 // global objects and variables
 
+let initData;
 let analysisData;
 
 let selectedFilterOpts = [];
@@ -63,7 +64,8 @@ const uploadsuccess = document
 
             sel.add(opt);
           }
-          analysisData = answer.data;
+          initData = answer.data;
+          analysisData = initData;
           const filterOpts = getUniqueAttributeVals(
             analysisData,
             sel.value
@@ -91,22 +93,24 @@ const uploadsuccess = document
             },
             onUnselect: function (value, text, element) {
               // console.log("un select:", value);
-              console.log("un select:", value);
               selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
 
               console.log(`Remaining options: ${selectedFilterOpts}`);
             },
+            onChange: function (value, text, element) {
+              // console.log("change:", value);
+              analysisData = initData.filter((item) => {
+                // item[sel.value].includes(selectedFilterOpts);
+                for (const element of selectedFilterOpts) {
+                  if (item[sel.value].includes(element)) {
+                    return true;
+                  }
+                }
+              });
+
+              console.log(`Num rows: ${analysisData.length}`);
+            },
           });
-
-          let filteredElem = document.getElementById("filter1id");
-          console.log(`Check elem: ${filteredElem}`);
-
-          filteredElem.addEventListener("click", (event) => {
-            // change, input
-            console.log(`Event: ${event}`);
-          });
-
-          // console.log(filteredElem);
 
           // initial selection
           let selectedOption = dataAttributeProps[0];
