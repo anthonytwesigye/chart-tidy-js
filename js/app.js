@@ -4,7 +4,7 @@ const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 
 let initData;
 let analysisData;
-
+let selectedOption;
 let selectedFilterOpts = [];
 
 let dataAttributeProps;
@@ -66,6 +66,7 @@ const uploadsuccess = document
           }
           initData = answer.data;
           analysisData = initData;
+
           const filterOpts = getUniqueAttributeVals(
             analysisData,
             sel.value
@@ -86,19 +87,10 @@ const uploadsuccess = document
             max: null,
             onSelect: function (value, text, element) {
               // console.log("select:", value);
-              console.log("select:", value);
               selectedFilterOpts.push(value);
 
-              console.log(`Pushed options: ${selectedFilterOpts}`);
-            },
-            onUnselect: function (value, text, element) {
-              // console.log("un select:", value);
-              selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
-
-              console.log(`Remaining options: ${selectedFilterOpts}`);
-            },
-            onChange: function (value, text, element) {
-              // console.log("change:", value);
+              // console.log(`Pushed options: ${selectedFilterOpts}`);
+              // updated analysis data
               analysisData = initData.filter((item) => {
                 // item[sel.value].includes(selectedFilterOpts);
                 for (const element of selectedFilterOpts) {
@@ -107,13 +99,27 @@ const uploadsuccess = document
                   }
                 }
               });
+              // console.log(`Current data num: ${analysisData.length}`);
+            },
+            onUnselect: function (value, text, element) {
+              // console.log("un select:", value);
+              selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
 
-              console.log(`Num rows: ${analysisData.length}`);
+              // console.log(`Remaining options: ${selectedFilterOpts}`);
+              // updated analysis data
+              analysisData = initData.filter((item) => {
+                for (const element of selectedFilterOpts) {
+                  if (item[sel.value].includes(element)) {
+                    return true;
+                  }
+                }
+              });
+              // console.log(`Current data num: ${analysisData.length}`);
             },
           });
 
           // initial selection
-          let selectedOption = dataAttributeProps[0];
+          selectedOption = dataAttributeProps[0];
           // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(
             analysisData,
@@ -281,7 +287,7 @@ const uploadsuccess = document
         }
 
         // initial selection
-        let selectedOption = dataAttributeProps[0];
+        selectedOption = dataAttributeProps[0];
 
         // console.log(`Selected option: ${selectedOption}`);
         let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
@@ -429,7 +435,7 @@ const uploadsuccess = document
           }
 
           // initial selection
-          let selectedOption = dataAttributeProps[0];
+          selectedOption = dataAttributeProps[0];
           // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
 
