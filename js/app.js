@@ -1175,4 +1175,23 @@ function colorMarker(color) {
   return icon;
 }
 
+// the function for filtering data based on properties of an attribute
+
+function dynamicFilter(data, filterarray, attr) {
+  let filteredData;
+  if (filterarray.length > 0) {
+    filteredData = data.filter((item) => {
+      for (const element of filterarray) {
+        if (item[attr].includes(element)) {
+          return true;
+        }
+      }
+    });
+  } else {
+    filteredData = data;
+  }
+
+  return filteredData;
+}
+
 // #endregion
