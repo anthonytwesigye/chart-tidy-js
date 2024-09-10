@@ -89,31 +89,24 @@ const uploadsuccess = document
               // console.log("select:", value);
               selectedFilterOpts.push(value);
 
-              // console.log(`Pushed options: ${selectedFilterOpts}`);
               // updated analysis data
-              analysisData = initData.filter((item) => {
-                // item[sel.value].includes(selectedFilterOpts);
-                for (const element of selectedFilterOpts) {
-                  if (item[sel.value].includes(element)) {
-                    return true;
-                  }
-                }
-              });
+              analysisData = dynamicFilter(
+                initData,
+                selectedFilterOpts,
+                sel.value
+              );
               // console.log(`Current data num: ${analysisData.length}`);
             },
             onUnselect: function (value, text, element) {
               // console.log("un select:", value);
               selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
 
-              // console.log(`Remaining options: ${selectedFilterOpts}`);
               // updated analysis data
-              analysisData = initData.filter((item) => {
-                for (const element of selectedFilterOpts) {
-                  if (item[sel.value].includes(element)) {
-                    return true;
-                  }
-                }
-              });
+              analysisData = dynamicFilter(
+                initData,
+                selectedFilterOpts,
+                sel.value
+              );
               // console.log(`Current data num: ${analysisData.length}`);
             },
           });
