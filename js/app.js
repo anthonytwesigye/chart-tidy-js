@@ -2,6 +2,10 @@
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 // global objects and variables
 
+let analysisData;
+
+let selectedFilterOpts = [];
+
 let dataAttributeProps;
 
 // init chart variable
@@ -49,8 +53,6 @@ const uploadsuccess = document
 
           ////////////////// create dropdown for aggregation //////////////////
           const sel = document.getElementById("aggregateid");
-          const fil1 = document.getElementById("filter1id");
-          const fil2 = document.getElementById("filter2id");
 
           dataAttributeProps = Object.keys(answer.data[0]);
 
@@ -61,36 +63,58 @@ const uploadsuccess = document
 
             sel.add(opt);
           }
-
-          dataAttributeProps.forEach((item) => {
-            let filterOpt1 = document.createElement("option");
-            filterOpt1.value = item;
-            filterOpt1.text = item;
-            fil1.add(filterOpt1);
+          analysisData = answer.data;
+          const filterOpts = getUniqueAttributeVals(
+            analysisData,
+            sel.value
+          ).map((item) => {
+            return {
+              value: item,
+              text: item,
+            };
           });
 
-          // check filter1 option
-          let fil1Option = fil1.value;
-          console.log(fil1Option);
+          // add options to the filter
+          new MultiSelect("#filter1id", {
+            data: filterOpts,
+            placeholder: "Select option",
+            search: true,
+            selectAll: true,
+            listAll: true,
+            max: null,
+            onSelect: function (value, text, element) {
+              // console.log("select:", value);
+              console.log("select:", value);
+              selectedFilterOpts.push(value);
 
-          const fil1Cats = getUniqueAttributeVals(answer.data, fil1Option);
-          const fil1Type = getAttributeTypeJson(answer.data, fil1Option);
+              console.log(`Pushed options: ${selectedFilterOpts}`);
+            },
+            onUnselect: function (value, text, element) {
+              // console.log("un select:", value);
+              console.log("un select:", value);
+              selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
 
-          console.log(`Categories: ${fil1Cats}`);
-          console.log(`ColumnType: ${fil1Type}`);
-
-          // for filter 2, it should exlude what is selected in filter 1 like: dataAttributeProps.slice(dataAttributeProps.indexOf('filter1')+1));
-          dataAttributeProps.forEach((item) => {
-            let filterOpt2 = document.createElement("option");
-            filterOpt2.value = item;
-            filterOpt2.text = item;
-            fil2.add(filterOpt2);
+              console.log(`Remaining options: ${selectedFilterOpts}`);
+            },
           });
+
+          let filteredElem = document.getElementById("filter1id");
+          console.log(`Check elem: ${filteredElem}`);
+
+          filteredElem.addEventListener("click", (event) => {
+            // change, input
+            console.log(`Event: ${event}`);
+          });
+
+          // console.log(filteredElem);
 
           // initial selection
           let selectedOption = dataAttributeProps[0];
           // console.log(`Selected option: ${selectedOption}`);
-          let attributeType = getAttributeTypeJson(answer.data, selectedOption);
+          let attributeType = getAttributeTypeJson(
+            analysisData,
+            selectedOption
+          );
 
           chartStatus = Chart.getChart("myChart"); // <canvas> id
           if (chartStatus != undefined) {
@@ -99,7 +123,7 @@ const uploadsuccess = document
 
           if (attributeType[0] === "number") {
             let boxplotInitData = createInitBoxplotData(
-              answer.data,
+              analysisData,
               selectedOption
             );
             // init renderer
@@ -109,7 +133,7 @@ const uploadsuccess = document
             );
           } else {
             let chartInitData = createInitChartData(
-              answer.data,
+              analysisData,
               selectedOption
             );
             // init renderer
@@ -124,7 +148,7 @@ const uploadsuccess = document
           if (guageChartStatus != undefined) {
             guageChartStatus.destroy();
           }
-          let guageData = createGuageChartData(answer.data, selectedOption);
+          let guageData = createGuageChartData(analysisData, selectedOption);
           duplicatesChart = new Chart(
             document.getElementById("duplicatesChart"),
             guageData.initConfig
@@ -137,7 +161,7 @@ const uploadsuccess = document
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
             // console.log(selectedOption);
-            attributeType = getAttributeTypeJson(answer.data, selectedOption);
+            attributeType = getAttributeTypeJson(analysisData, selectedOption);
             console.log(`Attribute: ${selectedOption}, Type: ${attributeType}`);
             // remove old chart before creating a new one
             chartStatus = Chart.getChart("myChart"); // <canvas> id
@@ -148,12 +172,12 @@ const uploadsuccess = document
             if (attributeType[0] === "number") {
               // get updated data
               const boxplotUpdatedtData = createUpdatedBoxplotData(
-                answer.data,
+                analysisData,
                 selectedOption
               );
 
               boxplotInitData = createInitBoxplotData(
-                answer.data,
+                analysisData,
                 selectedOption
               );
               // update renderer
@@ -164,10 +188,10 @@ const uploadsuccess = document
             } else {
               // get updated data
               const chartUpdatedtData = createUpdatedChartData(
-                answer.data,
+                analysisData,
                 selectedOption
               );
-              chartInitData = createInitChartData(answer.data, selectedOption);
+              chartInitData = createInitChartData(analysisData, selectedOption);
               // update renderer
               myChart = new Chart(
                 document.getElementById("myChart"),
@@ -179,7 +203,7 @@ const uploadsuccess = document
             if (guageChartStatus != undefined) {
               guageChartStatus.destroy();
             }
-            let guageData = createGuageChartData(answer.data, selectedOption);
+            let guageData = createGuageChartData(analysisData, selectedOption);
             duplicatesChart = new Chart(
               document.getElementById("duplicatesChart"),
               guageData.initConfig
@@ -855,7 +879,7 @@ function createGuageChartData(loadeddata, grpoption) {
       },
     },
   };
-  console.log(duplicatesData);
+  // console.log(duplicatesData);
   const dataForChart = { initConfig: config, duplicatesTData: duplicatesData };
 
   return dataForChart;
