@@ -3,3 +3,4 @@
 data/*
 support_files/*
 !/**/.gitkeep
+.vscode/settings.json
