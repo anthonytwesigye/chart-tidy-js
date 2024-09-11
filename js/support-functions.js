@@ -344,6 +344,11 @@ function updateDataOnMap(inputData, attributecats, mapattribute) {
   //get layer type
   const layerGeomType = getLayerGeomTypes(inputData)[0];
 
+  // remove old layer before adding new one
+  if (mapData && inputData.features.length > 0) {
+    map.removeLayer(mapData);
+  }
+
   if (layerGeomType === "Point" || layerGeomType === "MultiPoint") {
     // recreate the layer as other options did not work for markers
     mapData = L.geoJSON(inputData, {
@@ -542,15 +547,49 @@ function colorMarker(color) {
 function dynamicFilter(data, filterarray, attr) {
   let filteredData;
   if (filterarray.length > 0) {
+    // other datasets not geojson format
     filteredData = data.filter((item) => {
-      for (const element of filterarray) {
+      for (let element of filterarray) {
         if (item[attr].includes(element)) {
           return true;
         }
       }
     });
+    //   console.log(`Filtered data length: ${filteredData.length}`);
   } else {
     filteredData = data;
+    console.warn("empty filter ignored");
+  }
+  return filteredData;
+}
+
+function dynamicGeoFilter(data, filterarray, attr) {
+  let filteredData;
+  if (filterarray.length > 0) {
+    // check if dataset is geojson
+    if (data.features) {
+      if (data.features.length > 1) {
+        let geoData = data;
+        let geoFiltered = geoData.features.filter((item) => {
+          for (let element of filterarray) {
+            if (item.properties[attr].includes(element)) {
+              return true;
+            }
+          }
+        });
+        // replace features in original data with filtered features
+        geoData.features = geoFiltered;
+        filteredData = geoData;
+        console.log(`Filtered geodata length: ${geoFiltered.length}`);
+        console.log(filterarray);
+        console.log(`Selected geocolumn: ${attr}`);
+      }
+    } else {
+      console.error("The data doesnot contain features properties");
+    }
+  } else {
+    filteredData = data;
+    console.warn("empty filter ignored");
   }
 
   return filteredData;

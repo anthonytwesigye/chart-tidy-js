@@ -2,13 +2,16 @@
 const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 // global objects and variables
 
-let initData;
 let filterOpts;
+let initData;
 let analysisData;
+let initMapData;
+let analysisMapData;
 let selectedOption;
 let selectedFilterOpts = [];
 
 let dataAttributeProps;
+let updateUniqAttributeCat;
 
 // init chart variable
 let myChart;
@@ -65,10 +68,14 @@ const uploadsuccess = document
 
             sel.add(opt);
           }
+
+          // initial selection
+          selectedOption = dataAttributeProps[0];
+          // set initial data
           initData = answer.data;
           analysisData = initData;
 
-          filterOpts = getUniqueAttributeVals(analysisData, sel.value).map(
+          filterOpts = getUniqueAttributeVals(analysisData, selectedOption).map(
             (item) => {
               return {
                 value: item,
@@ -233,8 +240,6 @@ const uploadsuccess = document
             },
           });
 
-          // initial selection
-          selectedOption = dataAttributeProps[0];
           // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(
             analysisData,
@@ -572,8 +577,155 @@ const uploadsuccess = document
         // initial selection
         selectedOption = dataAttributeProps[0];
 
+        // set initial data
+        initData = jsonObjects;
+        analysisData = initData;
+
+        filterOpts = getUniqueAttributeVals(analysisData, selectedOption).map(
+          (item) => {
+            return {
+              value: item,
+              text: item,
+            };
+          }
+        );
+
+        // add options to the filter
+        new MultiSelect("#filter1id", {
+          data: filterOpts,
+          placeholder: "Select option",
+          search: true,
+          selectAll: true,
+          listAll: true,
+          max: null,
+          onSelect: function (value, text, element) {
+            // console.log("select:", value);
+            selectedFilterOpts.push(value);
+
+            // updated analysis data
+            analysisData = dynamicFilter(
+              initData,
+              selectedFilterOpts,
+              sel.value
+            );
+            // console.log(`Current data num: ${analysisData.length}`);
+            attributeType = getAttributeTypeJson(analysisData, selectedOption);
+            console.log(`Attribute: ${selectedOption}, Type: ${attributeType}`);
+            // remove old chart before creating a new one
+            chartStatus = Chart.getChart("myChart"); // <canvas> id
+            if (chartStatus != undefined) {
+              chartStatus.destroy();
+            }
+
+            if (attributeType[0] === "number") {
+              // get updated data
+              const boxplotUpdatedtData = createUpdatedBoxplotData(
+                analysisData,
+                selectedOption
+              );
+
+              boxplotInitData = createInitBoxplotData(
+                analysisData,
+                selectedOption
+              );
+              // update renderer
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                boxplotInitData.initConfig
+              );
+            } else {
+              // get updated data
+              const chartUpdatedtData = createUpdatedChartData(
+                analysisData,
+                selectedOption
+              );
+              chartInitData = createInitChartData(analysisData, selectedOption);
+              // update renderer
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                chartInitData.initConfig
+              );
+            }
+            // guage
+            guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+            if (guageChartStatus != undefined) {
+              guageChartStatus.destroy();
+            }
+            let guageData = createGuageChartData(analysisData, selectedOption);
+            duplicatesChart = new Chart(
+              document.getElementById("duplicatesChart"),
+              guageData.initConfig
+            );
+            // add duplicates summary table
+            document.getElementById("duplicatesData").innerHTML =
+              createDuplicatesTable(guageData.duplicatesTData);
+          },
+          onUnselect: function (value, text, element) {
+            // console.log("un select:", value);
+            selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
+
+            // updated analysis data
+            analysisData = dynamicFilter(
+              initData,
+              selectedFilterOpts,
+              sel.value
+            );
+            // console.log(`Current data num: ${analysisData.length}`);
+            attributeType = getAttributeTypeJson(analysisData, selectedOption);
+            console.log(`Attribute: ${selectedOption}, Type: ${attributeType}`);
+            // remove old chart before creating a new one
+            chartStatus = Chart.getChart("myChart"); // <canvas> id
+            if (chartStatus != undefined) {
+              chartStatus.destroy();
+            }
+
+            if (attributeType[0] === "number") {
+              // get updated data
+              const boxplotUpdatedtData = createUpdatedBoxplotData(
+                analysisData,
+                selectedOption
+              );
+
+              boxplotInitData = createInitBoxplotData(
+                analysisData,
+                selectedOption
+              );
+              // update renderer
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                boxplotInitData.initConfig
+              );
+            } else {
+              // get updated data
+              const chartUpdatedtData = createUpdatedChartData(
+                analysisData,
+                selectedOption
+              );
+              chartInitData = createInitChartData(analysisData, selectedOption);
+              // update renderer
+              myChart = new Chart(
+                document.getElementById("myChart"),
+                chartInitData.initConfig
+              );
+            }
+            // guage
+            guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+            if (guageChartStatus != undefined) {
+              guageChartStatus.destroy();
+            }
+            let guageData = createGuageChartData(analysisData, selectedOption);
+            duplicatesChart = new Chart(
+              document.getElementById("duplicatesChart"),
+              guageData.initConfig
+            );
+            // add duplicates summary table
+            document.getElementById("duplicatesData").innerHTML =
+              createDuplicatesTable(guageData.duplicatesTData);
+          },
+        });
+
         // console.log(`Selected option: ${selectedOption}`);
-        let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
+        let attributeType = getAttributeTypeJson(analysisData, selectedOption);
 
         chartStatus = Chart.getChart("myChart"); // <canvas> id
         if (chartStatus != undefined) {
@@ -582,7 +734,7 @@ const uploadsuccess = document
 
         if (attributeType[0] === "number") {
           let boxplotInitData = createInitBoxplotData(
-            jsonObjects,
+            analysisData,
             selectedOption
           );
           // init renderer
@@ -591,7 +743,7 @@ const uploadsuccess = document
             boxplotInitData.initConfig
           );
         } else {
-          let chartInitData = createInitChartData(jsonObjects, selectedOption);
+          let chartInitData = createInitChartData(analysisData, selectedOption);
           // init renderer
           myChart = new Chart(
             document.getElementById("myChart"),
@@ -604,7 +756,7 @@ const uploadsuccess = document
         if (guageChartStatus != undefined) {
           guageChartStatus.destroy();
         }
-        let guageData = createGuageChartData(jsonObjects, selectedOption);
+        let guageData = createGuageChartData(analysisData, selectedOption);
         duplicatesChart = new Chart(
           document.getElementById("duplicatesChart"),
           guageData.initConfig
@@ -617,7 +769,175 @@ const uploadsuccess = document
         sel.addEventListener("change", function (optiondata) {
           selectedOption = sel.value;
           // console.log(selectedOption);
-          attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
+
+          analysisData = initData;
+          // update filter
+          filterOpts = getUniqueAttributeVals(analysisData, selectedOption).map(
+            (item) => {
+              return {
+                value: item,
+                text: item,
+              };
+            }
+          );
+
+          // add options to the filter
+          new MultiSelect("#filter1id", {
+            data: filterOpts,
+            placeholder: "Select option",
+            search: true,
+            selectAll: true,
+            listAll: true,
+            max: null,
+            onSelect: function (value, text, element) {
+              // console.log("select:", value);
+              selectedFilterOpts.push(value);
+
+              // updated analysis data
+              analysisData = dynamicFilter(
+                initData,
+                selectedFilterOpts,
+                sel.value
+              );
+              // console.log(`Current data num: ${analysisData.length}`);
+              attributeType = getAttributeTypeJson(
+                analysisData,
+                selectedOption
+              );
+              console.log(
+                `Attribute: ${selectedOption}, Type: ${attributeType}`
+              );
+              // remove old chart before creating a new one
+              chartStatus = Chart.getChart("myChart"); // <canvas> id
+              if (chartStatus != undefined) {
+                chartStatus.destroy();
+              }
+
+              if (attributeType[0] === "number") {
+                // get updated data
+                const boxplotUpdatedtData = createUpdatedBoxplotData(
+                  analysisData,
+                  selectedOption
+                );
+
+                boxplotInitData = createInitBoxplotData(
+                  analysisData,
+                  selectedOption
+                );
+                // update renderer
+                myChart = new Chart(
+                  document.getElementById("myChart"),
+                  boxplotInitData.initConfig
+                );
+              } else {
+                // get updated data
+                const chartUpdatedtData = createUpdatedChartData(
+                  analysisData,
+                  selectedOption
+                );
+                chartInitData = createInitChartData(
+                  analysisData,
+                  selectedOption
+                );
+                // update renderer
+                myChart = new Chart(
+                  document.getElementById("myChart"),
+                  chartInitData.initConfig
+                );
+              }
+              // guage
+              guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+              if (guageChartStatus != undefined) {
+                guageChartStatus.destroy();
+              }
+              let guageData = createGuageChartData(
+                analysisData,
+                selectedOption
+              );
+              duplicatesChart = new Chart(
+                document.getElementById("duplicatesChart"),
+                guageData.initConfig
+              );
+              // add duplicates summary table
+              document.getElementById("duplicatesData").innerHTML =
+                createDuplicatesTable(guageData.duplicatesTData);
+            },
+            onUnselect: function (value, text, element) {
+              // console.log("un select:", value);
+              selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
+
+              // updated analysis data
+              analysisData = dynamicFilter(
+                initData,
+                selectedFilterOpts,
+                sel.value
+              );
+              // console.log(`Current data num: ${analysisData.length}`);
+              attributeType = getAttributeTypeJson(
+                analysisData,
+                selectedOption
+              );
+              console.log(
+                `Attribute: ${selectedOption}, Type: ${attributeType}`
+              );
+              // remove old chart before creating a new one
+              chartStatus = Chart.getChart("myChart"); // <canvas> id
+              if (chartStatus != undefined) {
+                chartStatus.destroy();
+              }
+
+              if (attributeType[0] === "number") {
+                // get updated data
+                const boxplotUpdatedtData = createUpdatedBoxplotData(
+                  analysisData,
+                  selectedOption
+                );
+
+                boxplotInitData = createInitBoxplotData(
+                  analysisData,
+                  selectedOption
+                );
+                // update renderer
+                myChart = new Chart(
+                  document.getElementById("myChart"),
+                  boxplotInitData.initConfig
+                );
+              } else {
+                // get updated data
+                const chartUpdatedtData = createUpdatedChartData(
+                  analysisData,
+                  selectedOption
+                );
+                chartInitData = createInitChartData(
+                  analysisData,
+                  selectedOption
+                );
+                // update renderer
+                myChart = new Chart(
+                  document.getElementById("myChart"),
+                  chartInitData.initConfig
+                );
+              }
+              // guage
+              guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+              if (guageChartStatus != undefined) {
+                guageChartStatus.destroy();
+              }
+              let guageData = createGuageChartData(
+                analysisData,
+                selectedOption
+              );
+              duplicatesChart = new Chart(
+                document.getElementById("duplicatesChart"),
+                guageData.initConfig
+              );
+              // add duplicates summary table
+              document.getElementById("duplicatesData").innerHTML =
+                createDuplicatesTable(guageData.duplicatesTData);
+            },
+          });
+
+          attributeType = getAttributeTypeJson(analysisData, selectedOption);
           console.log(attributeType);
 
           chartStatus = Chart.getChart("myChart"); // <canvas> id
@@ -628,7 +948,7 @@ const uploadsuccess = document
           if (attributeType[0] === "number") {
             // get updated data
             const boxplotUpdatedtData = createUpdatedBoxplotData(
-              jsonObjects,
+              analysisData,
               selectedOption
             );
 
@@ -637,7 +957,7 @@ const uploadsuccess = document
             // myChart.update();
 
             boxplotInitData = createInitBoxplotData(
-              jsonObjects,
+              analysisData,
               selectedOption
             );
             // update renderer
@@ -648,7 +968,7 @@ const uploadsuccess = document
           } else {
             // get updated data
             const chartUpdatedtData = createUpdatedChartData(
-              jsonObjects,
+              analysisData,
               selectedOption
             );
 
@@ -656,7 +976,7 @@ const uploadsuccess = document
             //   myChart.data.datasets[0].data = chartUpdatedtData.updateData;
             //   myChart.update();
 
-            chartInitData = createInitChartData(jsonObjects, selectedOption);
+            chartInitData = createInitChartData(analysisData, selectedOption);
             // update renderer
             myChart = new Chart(
               document.getElementById("myChart"),
@@ -668,7 +988,7 @@ const uploadsuccess = document
           if (guageChartStatus != undefined) {
             guageChartStatus.destroy();
           }
-          let guageData = createGuageChartData(jsonObjects, selectedOption);
+          let guageData = createGuageChartData(analysisData, selectedOption);
           duplicatesChart = new Chart(
             document.getElementById("duplicatesChart"),
             guageData.initConfig
@@ -719,8 +1039,212 @@ const uploadsuccess = document
 
           // initial selection
           selectedOption = dataAttributeProps[0];
+
+          // set initial data
+          initData = jsonObjects;
+          analysisData = initData;
+
+          filterOpts = getUniqueAttributeVals(analysisData, selectedOption).map(
+            (item) => {
+              return {
+                value: item,
+                text: item,
+              };
+            }
+          );
+
+          // add options to the filter
+          new MultiSelect("#filter1id", {
+            data: filterOpts,
+            placeholder: "Select option",
+            search: true,
+            selectAll: true,
+            listAll: true,
+            max: null,
+            onSelect: function (value, text, element) {
+              // console.log("select:", value);
+              selectedFilterOpts.push(value);
+
+              // updated analysis data
+              analysisData = dynamicFilter(
+                initData,
+                selectedFilterOpts,
+                sel.value
+              );
+              // console.log(`Current data num: ${analysisData.length}`);
+              attributeType = getAttributeTypeJson(
+                analysisData,
+                selectedOption
+              );
+              console.log(
+                `Attribute: ${selectedOption}, Type: ${attributeType}`
+              );
+              // remove old chart before creating a new one
+              chartStatus = Chart.getChart("myChart"); // <canvas> id
+              if (chartStatus != undefined) {
+                chartStatus.destroy();
+              }
+
+              if (attributeType[0] === "number") {
+                // get updated data
+                const boxplotUpdatedtData = createUpdatedBoxplotData(
+                  analysisData,
+                  selectedOption
+                );
+
+                boxplotInitData = createInitBoxplotData(
+                  analysisData,
+                  selectedOption
+                );
+                // update renderer
+                myChart = new Chart(
+                  document.getElementById("myChart"),
+                  boxplotInitData.initConfig
+                );
+              } else {
+                // get updated data
+                const chartUpdatedtData = createUpdatedChartData(
+                  analysisData,
+                  selectedOption
+                );
+                chartInitData = createInitChartData(
+                  analysisData,
+                  selectedOption
+                );
+                // update renderer
+                myChart = new Chart(
+                  document.getElementById("myChart"),
+                  chartInitData.initConfig
+                );
+              }
+              // guage
+              guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+              if (guageChartStatus != undefined) {
+                guageChartStatus.destroy();
+              }
+              let guageData = createGuageChartData(
+                analysisData,
+                selectedOption
+              );
+              duplicatesChart = new Chart(
+                document.getElementById("duplicatesChart"),
+                guageData.initConfig
+              );
+              // add duplicates summary table
+              document.getElementById("duplicatesData").innerHTML =
+                createDuplicatesTable(guageData.duplicatesTData);
+
+              // update map data
+              analysisMapData = dynamicFilter(
+                initMapData,
+                selectedFilterOpts,
+                selectedOption
+              );
+              updateUniqAttributeCat = getUniqueAttributeValsGeojson(
+                initMapData,
+                selectedOption
+              );
+              updateDataOnMap(
+                analysisMapData,
+                updateUniqAttributeCat,
+                selectedOption
+              );
+            },
+            onUnselect: function (value, text, element) {
+              // console.log("un select:", value);
+              selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
+
+              // updated analysis data
+              analysisData = dynamicFilter(
+                initData,
+                selectedFilterOpts,
+                sel.value
+              );
+              // console.log(`Current data num: ${analysisData.length}`);
+              attributeType = getAttributeTypeJson(
+                analysisData,
+                selectedOption
+              );
+              console.log(
+                `Attribute: ${selectedOption}, Type: ${attributeType}`
+              );
+              // remove old chart before creating a new one
+              chartStatus = Chart.getChart("myChart"); // <canvas> id
+              if (chartStatus != undefined) {
+                chartStatus.destroy();
+              }
+
+              if (attributeType[0] === "number") {
+                // get updated data
+                const boxplotUpdatedtData = createUpdatedBoxplotData(
+                  analysisData,
+                  selectedOption
+                );
+
+                boxplotInitData = createInitBoxplotData(
+                  analysisData,
+                  selectedOption
+                );
+                // update renderer
+                myChart = new Chart(
+                  document.getElementById("myChart"),
+                  boxplotInitData.initConfig
+                );
+              } else {
+                // get updated data
+                const chartUpdatedtData = createUpdatedChartData(
+                  analysisData,
+                  selectedOption
+                );
+                chartInitData = createInitChartData(
+                  analysisData,
+                  selectedOption
+                );
+                // update renderer
+                myChart = new Chart(
+                  document.getElementById("myChart"),
+                  chartInitData.initConfig
+                );
+              }
+              // guage
+              guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+              if (guageChartStatus != undefined) {
+                guageChartStatus.destroy();
+              }
+              let guageData = createGuageChartData(
+                analysisData,
+                selectedOption
+              );
+              duplicatesChart = new Chart(
+                document.getElementById("duplicatesChart"),
+                guageData.initConfig
+              );
+              // add duplicates summary table
+              document.getElementById("duplicatesData").innerHTML =
+                createDuplicatesTable(guageData.duplicatesTData);
+
+              // update map data
+              analysisMapData = dynamicFilter(
+                initMapData,
+                selectedFilterOpts,
+                selectedOption
+              );
+              updateUniqAttributeCat = getUniqueAttributeValsGeojson(
+                initMapData,
+                selectedOption
+              );
+              updateDataOnMap(
+                analysisMapData,
+                updateUniqAttributeCat,
+                selectedOption
+              );
+            },
+          });
           // console.log(`Selected option: ${selectedOption}`);
-          let attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
+          let attributeType = getAttributeTypeJson(
+            analysisData,
+            selectedOption
+          );
 
           chartStatus = Chart.getChart("myChart"); // <canvas> id
           if (chartStatus != undefined) {
@@ -729,7 +1253,7 @@ const uploadsuccess = document
 
           if (attributeType[0] === "number") {
             let boxplotInitData = createInitBoxplotData(
-              jsonObjects,
+              analysisData,
               selectedOption
             );
             // init renderer
@@ -739,7 +1263,7 @@ const uploadsuccess = document
             );
           } else {
             let chartInitData = createInitChartData(
-              jsonObjects,
+              analysisData,
               selectedOption
             );
             // init renderer
@@ -754,7 +1278,7 @@ const uploadsuccess = document
           if (guageChartStatus != undefined) {
             guageChartStatus.destroy();
           }
-          let guageData = createGuageChartData(jsonObjects, selectedOption);
+          let guageData = createGuageChartData(analysisData, selectedOption);
           duplicatesChart = new Chart(
             document.getElementById("duplicatesChart"),
             guageData.initConfig
@@ -767,7 +1291,208 @@ const uploadsuccess = document
           sel.addEventListener("change", function (optiondata) {
             selectedOption = sel.value;
             // console.log(selectedOption);
-            attributeType = getAttributeTypeJson(jsonObjects, selectedOption);
+
+            analysisData = initData;
+            // update filter
+            filterOpts = getUniqueAttributeVals(
+              analysisData,
+              selectedOption
+            ).map((item) => {
+              return {
+                value: item,
+                text: item,
+              };
+            });
+
+            // add options to the filter
+            new MultiSelect("#filter1id", {
+              data: filterOpts,
+              placeholder: "Select option",
+              search: true,
+              selectAll: true,
+              listAll: true,
+              max: null,
+              onSelect: function (value, text, element) {
+                // console.log("select:", value);
+                selectedFilterOpts.push(value);
+
+                // updated analysis data
+                analysisData = dynamicFilter(
+                  initData,
+                  selectedFilterOpts,
+                  sel.value
+                );
+                // console.log(`Current data num: ${analysisData.length}`);
+                attributeType = getAttributeTypeJson(
+                  analysisData,
+                  selectedOption
+                );
+                console.log(
+                  `Attribute: ${selectedOption}, Type: ${attributeType}`
+                );
+                // remove old chart before creating a new one
+                chartStatus = Chart.getChart("myChart"); // <canvas> id
+                if (chartStatus != undefined) {
+                  chartStatus.destroy();
+                }
+
+                if (attributeType[0] === "number") {
+                  // get updated data
+                  const boxplotUpdatedtData = createUpdatedBoxplotData(
+                    analysisData,
+                    selectedOption
+                  );
+
+                  boxplotInitData = createInitBoxplotData(
+                    analysisData,
+                    selectedOption
+                  );
+                  // update renderer
+                  myChart = new Chart(
+                    document.getElementById("myChart"),
+                    boxplotInitData.initConfig
+                  );
+                } else {
+                  // get updated data
+                  const chartUpdatedtData = createUpdatedChartData(
+                    analysisData,
+                    selectedOption
+                  );
+                  chartInitData = createInitChartData(
+                    analysisData,
+                    selectedOption
+                  );
+                  // update renderer
+                  myChart = new Chart(
+                    document.getElementById("myChart"),
+                    chartInitData.initConfig
+                  );
+                }
+                // guage
+                guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+                if (guageChartStatus != undefined) {
+                  guageChartStatus.destroy();
+                }
+                let guageData = createGuageChartData(
+                  analysisData,
+                  selectedOption
+                );
+                duplicatesChart = new Chart(
+                  document.getElementById("duplicatesChart"),
+                  guageData.initConfig
+                );
+                // add duplicates summary table
+                document.getElementById("duplicatesData").innerHTML =
+                  createDuplicatesTable(guageData.duplicatesTData);
+
+                // update map data
+                analysisMapData = dynamicFilter(
+                  initMapData,
+                  selectedFilterOpts,
+                  selectedOption
+                );
+                updateUniqAttributeCat = getUniqueAttributeValsGeojson(
+                  initMapData,
+                  selectedOption
+                );
+                updateDataOnMap(
+                  analysisMapData,
+                  updateUniqAttributeCat,
+                  selectedOption
+                );
+              },
+              onUnselect: function (value, text, element) {
+                // console.log("un select:", value);
+                selectedFilterOpts.splice(selectedFilterOpts.indexOf(value), 1);
+
+                // updated analysis data
+                analysisData = dynamicFilter(
+                  initData,
+                  selectedFilterOpts,
+                  sel.value
+                );
+                // console.log(`Current data num: ${analysisData.length}`);
+                attributeType = getAttributeTypeJson(
+                  analysisData,
+                  selectedOption
+                );
+                console.log(
+                  `Attribute: ${selectedOption}, Type: ${attributeType}`
+                );
+                // remove old chart before creating a new one
+                chartStatus = Chart.getChart("myChart"); // <canvas> id
+                if (chartStatus != undefined) {
+                  chartStatus.destroy();
+                }
+
+                if (attributeType[0] === "number") {
+                  // get updated data
+                  const boxplotUpdatedtData = createUpdatedBoxplotData(
+                    analysisData,
+                    selectedOption
+                  );
+
+                  boxplotInitData = createInitBoxplotData(
+                    analysisData,
+                    selectedOption
+                  );
+                  // update renderer
+                  myChart = new Chart(
+                    document.getElementById("myChart"),
+                    boxplotInitData.initConfig
+                  );
+                } else {
+                  // get updated data
+                  const chartUpdatedtData = createUpdatedChartData(
+                    analysisData,
+                    selectedOption
+                  );
+                  chartInitData = createInitChartData(
+                    analysisData,
+                    selectedOption
+                  );
+                  // update renderer
+                  myChart = new Chart(
+                    document.getElementById("myChart"),
+                    chartInitData.initConfig
+                  );
+                }
+                // guage
+                guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
+                if (guageChartStatus != undefined) {
+                  guageChartStatus.destroy();
+                }
+                let guageData = createGuageChartData(
+                  analysisData,
+                  selectedOption
+                );
+                duplicatesChart = new Chart(
+                  document.getElementById("duplicatesChart"),
+                  guageData.initConfig
+                );
+                // add duplicates summary table
+                document.getElementById("duplicatesData").innerHTML =
+                  createDuplicatesTable(guageData.duplicatesTData);
+
+                // update map data
+                analysisMapData = dynamicFilter(
+                  initMapData,
+                  selectedFilterOpts,
+                  selectedOption
+                );
+                updateUniqAttributeCat = getUniqueAttributeValsGeojson(
+                  initMapData,
+                  selectedOption
+                );
+                updateDataOnMap(
+                  analysisMapData,
+                  updateUniqAttributeCat,
+                  selectedOption
+                );
+              },
+            });
+
+            attributeType = getAttributeTypeJson(analysisData, selectedOption);
             console.log(attributeType);
 
             chartStatus = Chart.getChart("myChart"); // <canvas> id
@@ -778,7 +1503,7 @@ const uploadsuccess = document
             if (attributeType[0] === "number") {
               // get updated data
               const boxplotUpdatedtData = createUpdatedBoxplotData(
-                jsonObjects,
+                analysisData,
                 selectedOption
               );
 
@@ -787,7 +1512,7 @@ const uploadsuccess = document
               // myChart.update();
 
               boxplotInitData = createInitBoxplotData(
-                jsonObjects,
+                analysisData,
                 selectedOption
               );
               // update renderer
@@ -798,7 +1523,7 @@ const uploadsuccess = document
             } else {
               // get updated data
               const chartUpdatedtData = createUpdatedChartData(
-                jsonObjects,
+                analysisData,
                 selectedOption
               );
 
@@ -806,7 +1531,7 @@ const uploadsuccess = document
               //   myChart.data.datasets[0].data = chartUpdatedtData.updateData;
               //   myChart.update();
 
-              chartInitData = createInitChartData(jsonObjects, selectedOption);
+              chartInitData = createInitChartData(analysisData, selectedOption);
               // update renderer
               myChart = new Chart(
                 document.getElementById("myChart"),
@@ -819,7 +1544,7 @@ const uploadsuccess = document
             if (guageChartStatus != undefined) {
               guageChartStatus.destroy();
             }
-            let guageData = createGuageChartData(jsonObjects, selectedOption);
+            let guageData = createGuageChartData(analysisData, selectedOption);
             duplicatesChart = new Chart(
               document.getElementById("duplicatesChart"),
               guageData.initConfig
@@ -829,24 +1554,26 @@ const uploadsuccess = document
               createDuplicatesTable(guageData.duplicatesTData);
 
             // update map data
-            const updateUniqAttributeCat = getUniqueAttributeValsGeojson(
-              geojsonData,
+            updateUniqAttributeCat = getUniqueAttributeValsGeojson(
+              initMapData,
               selectedOption
             );
             updateDataOnMap(
-              geojsonData,
+              initMapData,
               updateUniqAttributeCat,
               selectedOption
             );
           });
           // end of chart
           ////// leaflet map //////
+          initMapData = geojsonData;
+          analysisMapData = initMapData;
           const uniqAttributeCat = getUniqueAttributeValsGeojson(
-            geojsonData,
+            initMapData,
             selectedOption
           );
           const addLayerToMap = addDataToMap(
-            geojsonData,
+            initMapData,
             uniqAttributeCat,
             selectedOption
           );
