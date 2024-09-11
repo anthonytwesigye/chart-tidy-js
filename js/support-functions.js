@@ -542,13 +542,31 @@ function colorMarker(color) {
 function dynamicFilter(data, filterarray, attr) {
   let filteredData;
   if (filterarray.length > 0) {
-    filteredData = data.filter((item) => {
-      for (const element of filterarray) {
-        if (item[attr].includes(element)) {
-          return true;
-        }
+    // check if dataset is geojson
+    if (data.features) {
+      if (data.features.length > 1) {
+        let geoData = data;
+        let geoFiltered = geoData.features.filter((item) => {
+          for (const element of filterarray) {
+            if (item.properties[attr].includes(element)) {
+              return true;
+            }
+          }
+        });
+        // replace features in original data with filtered features
+        geoData.features = geoFiltered;
+        filteredData = geoData;
       }
-    });
+    } else {
+      // other datasets not geojson format
+      filteredData = data.filter((item) => {
+        for (const element of filterarray) {
+          if (item[attr].includes(element)) {
+            return true;
+          }
+        }
+      });
+    }
   } else {
     filteredData = data;
   }
