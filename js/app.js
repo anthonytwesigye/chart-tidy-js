@@ -5,6 +5,8 @@ const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
 let filterOpts;
 let initData;
 let analysisData;
+let initMapData;
+let analysisMapData;
 let selectedOption;
 let selectedFilterOpts = [];
 
@@ -1488,23 +1490,24 @@ const uploadsuccess = document
 
             // update map data
             const updateUniqAttributeCat = getUniqueAttributeValsGeojson(
-              geojsonData,
+              analysisMapData,
               selectedOption
             );
             updateDataOnMap(
-              geojsonData,
+              analysisMapData,
               updateUniqAttributeCat,
               selectedOption
             );
           });
           // end of chart
           ////// leaflet map //////
+          analysisMapData = geojsonData;
           const uniqAttributeCat = getUniqueAttributeValsGeojson(
-            geojsonData,
+            analysisMapData,
             selectedOption
           );
           const addLayerToMap = addDataToMap(
-            geojsonData,
+            analysisMapData,
             uniqAttributeCat,
             selectedOption
           );
