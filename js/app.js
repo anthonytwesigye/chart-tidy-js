@@ -65,10 +65,14 @@ const uploadsuccess = document
 
             sel.add(opt);
           }
+
+          // initial selection
+          selectedOption = dataAttributeProps[0];
+
           initData = answer.data;
           analysisData = initData;
 
-          filterOpts = getUniqueAttributeVals(analysisData, sel.value).map(
+          filterOpts = getUniqueAttributeVals(analysisData, selectedOption).map(
             (item) => {
               return {
                 value: item,
@@ -233,8 +237,6 @@ const uploadsuccess = document
             },
           });
 
-          // initial selection
-          selectedOption = dataAttributeProps[0];
           // console.log(`Selected option: ${selectedOption}`);
           let attributeType = getAttributeTypeJson(
             analysisData,
