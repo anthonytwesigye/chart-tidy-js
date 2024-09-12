@@ -563,14 +563,14 @@ function dynamicFilter(data, filterarray, attr) {
   return filteredData;
 }
 
-function dynamicGeoFilter(data, filterarray, attr) {
-  let filteredData;
+function dynamicGeoFilter(data4Filter, filterarray, attr) {
+  let filteredGeoData;
   if (filterarray.length > 0) {
     // check if dataset is geojson
-    if (data.features) {
-      if (data.features.length > 1) {
-        let geoData = data;
-        let geoFiltered = geoData.features.filter((item) => {
+    if (data4Filter.features) {
+      if (data4Filter.features.length > 1) {
+        let geoData = data4Filter;
+        const geoFiltered = geoData.features.filter((item) => {
           for (let element of filterarray) {
             if (item.properties[attr].includes(element)) {
               return true;
@@ -578,21 +578,27 @@ function dynamicGeoFilter(data, filterarray, attr) {
           }
         });
         // replace features in original data with filtered features
-        geoData.features = geoFiltered;
-        filteredData = geoData;
-        console.log(`Filtered geodata length: ${geoFiltered.length}`);
+        geoData["features"] = geoFiltered;
+        filteredGeoData = geoData;
+
         console.log(filterarray);
         console.log(`Selected geocolumn: ${attr}`);
+        console.log(`Geodata length: ${geoFiltered.length}`);
+        console.log(`Filtered geodata length: ${filteredGeoData.length}`);
+        console.log(`data length: ${data4Filter.features.length}`);
+        console.log(data4Filter);
+        console.log(filteredGeoData);
+        console.log(geoFiltered);
       }
     } else {
       console.error("The data doesnot contain features properties");
     }
   } else {
-    filteredData = data;
+    filteredGeoData = data4Filter;
     console.warn("empty filter ignored");
   }
 
-  return filteredData;
+  return filteredGeoData;
 }
 
 // #endregion
