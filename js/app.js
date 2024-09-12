@@ -6,7 +6,6 @@ let filterOpts;
 let initData;
 let analysisData;
 let initMapData;
-let analysisMapData;
 let selectedOption;
 let selectedFilterOpts = [];
 
@@ -1136,19 +1135,15 @@ const uploadsuccess = document
                 createDuplicatesTable(guageData.duplicatesTData);
 
               // update map data
-              analysisMapData = dynamicGeoFilter(
-                initMapData,
-                selectedFilterOpts,
-                selectedOption
-              );
               updateUniqAttributeCat = getUniqueAttributeValsGeojson(
                 initMapData,
                 selectedOption
               );
               updateDataOnMap(
-                analysisMapData,
+                initMapData,
                 updateUniqAttributeCat,
-                selectedOption
+                selectedOption,
+                selectedFilterOpts
               );
             },
             onUnselect: function (value, text, element) {
@@ -1225,19 +1220,15 @@ const uploadsuccess = document
                 createDuplicatesTable(guageData.duplicatesTData);
 
               // update map data
-              analysisMapData = dynamicGeoFilter(
-                initMapData,
-                selectedFilterOpts,
-                selectedOption
-              );
               updateUniqAttributeCat = getUniqueAttributeValsGeojson(
                 initMapData,
                 selectedOption
               );
               updateDataOnMap(
-                analysisMapData,
+                initMapData,
                 updateUniqAttributeCat,
-                selectedOption
+                selectedOption,
+                selectedFilterOpts
               );
             },
           });
@@ -1387,19 +1378,15 @@ const uploadsuccess = document
                   createDuplicatesTable(guageData.duplicatesTData);
 
                 // update map data
-                analysisMapData = dynamicGeoFilter(
-                  initMapData,
-                  selectedFilterOpts,
-                  selectedOption
-                );
                 updateUniqAttributeCat = getUniqueAttributeValsGeojson(
                   initMapData,
                   selectedOption
                 );
                 updateDataOnMap(
-                  analysisMapData,
+                  initMapData,
                   updateUniqAttributeCat,
-                  selectedOption
+                  selectedOption,
+                  selectedFilterOpts
                 );
               },
               onUnselect: function (value, text, element) {
@@ -1476,19 +1463,15 @@ const uploadsuccess = document
                   createDuplicatesTable(guageData.duplicatesTData);
 
                 // update map data
-                analysisMapData = dynamicGeoFilter(
-                  initMapData,
-                  selectedFilterOpts,
-                  selectedOption
-                );
                 updateUniqAttributeCat = getUniqueAttributeValsGeojson(
                   initMapData,
                   selectedOption
                 );
                 updateDataOnMap(
-                  analysisMapData,
+                  initMapData,
                   updateUniqAttributeCat,
-                  selectedOption
+                  selectedOption,
+                  selectedFilterOpts
                 );
               },
             });
@@ -1562,13 +1545,13 @@ const uploadsuccess = document
             updateDataOnMap(
               initMapData,
               updateUniqAttributeCat,
-              selectedOption
+              selectedOption,
+              selectedFilterOpts
             );
           });
           // end of chart
           ////// leaflet map //////
 
-          analysisMapData = initMapData;
           const uniqAttributeCat = getUniqueAttributeValsGeojson(
             initMapData,
             selectedOption

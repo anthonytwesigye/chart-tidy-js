@@ -340,7 +340,14 @@ function addDataToMap(inputData, attributecats, mapattribute) {
     map.fitBounds(mapData.getBounds());
   }
 }
-function updateDataOnMap(inputData, attributecats, mapattribute) {
+
+// update map data
+function updateDataOnMap(
+  inputData,
+  attributecats,
+  mapattribute,
+  filtersSelected
+) {
   //get layer type
   const layerGeomType = getLayerGeomTypes(inputData)[0];
 
@@ -352,6 +359,17 @@ function updateDataOnMap(inputData, attributecats, mapattribute) {
   if (layerGeomType === "Point" || layerGeomType === "MultiPoint") {
     // recreate the layer as other options did not work for markers
     mapData = L.geoJSON(inputData, {
+      filter: function (feature, layer) {
+        if (filtersSelected.length > 0) {
+          for (const element of filtersSelected) {
+            if (feature.properties[mapattribute].includes(element)) {
+              return true;
+            }
+          }
+        } else {
+          return true;
+        }
+      },
       pointToLayer: function (feature, latlng) {
         const currColor = getPropColor(
           attributecats,
