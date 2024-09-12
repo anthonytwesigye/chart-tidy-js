@@ -1041,6 +1041,7 @@ const uploadsuccess = document
           selectedOption = dataAttributeProps[0];
 
           // set initial data
+          initMapData = geojsonData;
           initData = jsonObjects;
           analysisData = initData;
 
@@ -1135,7 +1136,7 @@ const uploadsuccess = document
                 createDuplicatesTable(guageData.duplicatesTData);
 
               // update map data
-              analysisMapData = dynamicFilter(
+              analysisMapData = dynamicGeoFilter(
                 initMapData,
                 selectedFilterOpts,
                 selectedOption
@@ -1224,7 +1225,7 @@ const uploadsuccess = document
                 createDuplicatesTable(guageData.duplicatesTData);
 
               // update map data
-              analysisMapData = dynamicFilter(
+              analysisMapData = dynamicGeoFilter(
                 initMapData,
                 selectedFilterOpts,
                 selectedOption
@@ -1386,7 +1387,7 @@ const uploadsuccess = document
                   createDuplicatesTable(guageData.duplicatesTData);
 
                 // update map data
-                analysisMapData = dynamicFilter(
+                analysisMapData = dynamicGeoFilter(
                   initMapData,
                   selectedFilterOpts,
                   selectedOption
@@ -1475,7 +1476,7 @@ const uploadsuccess = document
                   createDuplicatesTable(guageData.duplicatesTData);
 
                 // update map data
-                analysisMapData = dynamicFilter(
+                analysisMapData = dynamicGeoFilter(
                   initMapData,
                   selectedFilterOpts,
                   selectedOption
@@ -1566,7 +1567,7 @@ const uploadsuccess = document
           });
           // end of chart
           ////// leaflet map //////
-          initMapData = geojsonData;
+
           analysisMapData = initMapData;
           const uniqAttributeCat = getUniqueAttributeValsGeojson(
             initMapData,
