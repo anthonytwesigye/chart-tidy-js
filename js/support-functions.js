@@ -619,4 +619,18 @@ function dynamicGeoFilter(data4Filter, filterarray, attr) {
   return filteredGeoData;
 }
 
+// function for reading file data
+function readFileData(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    // on load
+    reader.onload = (res) => {
+      resolve(res.target.result);
+    };
+    // on error
+    reader.onerror = (err) => reject(err);
+
+    reader.readAsText(file);
+  });
+}
 // #endregion
