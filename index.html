@@ -24,26 +24,28 @@
         <div class="col-xl-5 col-lg-6">
           <div class="card">
             <div class="card-body">
-              <label for="UploadFile">Choose file</label>
+              <label for="UploadFile"
+                >Choose .csv, .xls(x), .geojson or Shapefile(.zip)</label
+              >
               <input
                 type="file"
                 id="UploadFile"
-                accept=".csv, .xls, .xlsx, .geojson"
+                accept=".csv, .xls, .xlsx, .geojson, .zip"
               />
 
-              <button id="uploadsuccess">file uploaded</button>
+              <button id="uploadsuccess">Upload</button>
             </div>
           </div>
           <div class="card">
             <div class="card-body">
-              <label for="aggregateid">Select analysis column</label>
+              <label for="aggregateid">Select analysis attribute</label>
               <select id="aggregateid"></select>
             </div>
           </div>
           <div class="card">
             <div class="card-body">
               <div id="filter1">
-                <label for="filter1id">Filter data</label>
+                <label for="filter1id">Apply filters</label>
                 <select id="filter1id" name="filter1id"></select>
               </div>
               <div id="filter2" class="col"></div>
@@ -86,6 +88,7 @@
     <script src="libs/turf.min.js"></script>
     <script src="../libs/index.umd.min.js"></script>
     <script src="libs/MultiSelect.js"></script>
+    <script src="libs/shp.min.js"></script>
     <!-- app -->
     <script src="js/app.js"></script>
     <script src="js/support-functions.js"></script>
