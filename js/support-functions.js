@@ -392,22 +392,63 @@ function updateDataOnMap(
       },
     }).addTo(map);
   } else {
-    mapData.setStyle(function (feature) {
-      const currpolColor = getPropColor(
-        attributecats,
-        feature.properties[mapattribute]
-      );
-      // console.log(currpolColor);
-      const currStyle = {
-        fillColor: currpolColor,
-        weight: 1,
-        opacity: 1,
-        color: currpolColor,
-        dashArray: "",
-        fillOpacity: 1,
-      };
-      return currStyle;
-    });
+    // mapData.setStyle(function (feature) {
+    //   const currpolColor = getPropColor(
+    //     attributecats,
+    //     feature.properties[mapattribute]
+    //   );
+    //   // console.log(currpolColor);
+    //   const currStyle = {
+    //     fillColor: currpolColor,
+    //     weight: 1,
+    //     opacity: 1,
+    //     color: currpolColor,
+    //     dashArray: "",
+    //     fillOpacity: 1,
+    //   };
+    //   return currStyle;
+    // });
+
+    mapData = L.geoJSON(inputData, {
+      filter: function (feature, layer) {
+        if (filtersSelected.length > 0) {
+          for (const element of filtersSelected) {
+            if (feature.properties[mapattribute].includes(element)) {
+              return true;
+            }
+          }
+        } else {
+          return true;
+        }
+      },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(createPopupContent(feature.properties), {
+            autoPan: true,
+            maxHeight: 300, // Set max height for the popup
+          });
+          layer.on("click", function () {
+            this.openPopup();
+          });
+        }
+      },
+      style: function (feature) {
+        const currpolColor = getPropColor(
+          attributecats,
+          feature.properties[mapattribute]
+        );
+        // console.log(currpolColor);
+        const currStyle = {
+          fillColor: currpolColor,
+          weight: 0.1,
+          opacity: 1,
+          color: "white",
+          dashArray: "",
+          fillOpacity: 0.7,
+        };
+        return currStyle;
+      },
+    }).addTo(map);
   }
 }
 
