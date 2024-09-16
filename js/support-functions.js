@@ -488,8 +488,11 @@ function getPropColor(uniqarray, prop) {
         return { data: entry, color: colorRamp[colorRamp.length - 1] };
     }
   });
-
-  return colorsForProperties[uniqarray.indexOf(prop)].color;
+  if (uniqarray.indexOf(prop) >= 0) {
+    return colorsForProperties[uniqarray.indexOf(prop)].color;
+  } else {
+    return colorRamp[colorRamp.length - 1];
+  }
 }
 
 // function get layer geometry types
@@ -568,7 +571,7 @@ function dynamicFilter(data, filterarray, attr) {
     // other datasets not geojson format
     filteredData = data.filter((item) => {
       for (let element of filterarray) {
-        if (item[attr].includes(element)) {
+        if (item[attr] && item[attr].includes(element)) {
           return true;
         }
       }
@@ -598,15 +601,6 @@ function dynamicGeoFilter(data4Filter, filterarray, attr) {
         // replace features in original data with filtered features
         geoData["features"] = geoFiltered;
         filteredGeoData = geoData;
-
-        console.log(filterarray);
-        console.log(`Selected geocolumn: ${attr}`);
-        console.log(`Geodata length: ${geoFiltered.length}`);
-        console.log(`Filtered geodata length: ${filteredGeoData.length}`);
-        console.log(`data length: ${data4Filter.features.length}`);
-        console.log(data4Filter);
-        console.log(filteredGeoData);
-        console.log(geoFiltered);
       }
     } else {
       console.error("The data doesnot contain features properties");
