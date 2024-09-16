@@ -488,8 +488,11 @@ function getPropColor(uniqarray, prop) {
         return { data: entry, color: colorRamp[colorRamp.length - 1] };
     }
   });
-
-  return colorsForProperties[uniqarray.indexOf(prop)].color;
+  if (uniqarray.indexOf(prop) >= 0) {
+    return colorsForProperties[uniqarray.indexOf(prop)].color;
+  } else {
+    return colorRamp[colorRamp.length - 1];
+  }
 }
 
 // function get layer geometry types
@@ -568,7 +571,7 @@ function dynamicFilter(data, filterarray, attr) {
     // other datasets not geojson format
     filteredData = data.filter((item) => {
       for (let element of filterarray) {
-        if (item[attr].includes(element)) {
+        if (item[attr] && item[attr].includes(element)) {
           return true;
         }
       }
@@ -598,15 +601,6 @@ function dynamicGeoFilter(data4Filter, filterarray, attr) {
         // replace features in original data with filtered features
         geoData["features"] = geoFiltered;
         filteredGeoData = geoData;
-
-        console.log(filterarray);
-        console.log(`Selected geocolumn: ${attr}`);
-        console.log(`Geodata length: ${geoFiltered.length}`);
-        console.log(`Filtered geodata length: ${filteredGeoData.length}`);
-        console.log(`data length: ${data4Filter.features.length}`);
-        console.log(data4Filter);
-        console.log(filteredGeoData);
-        console.log(geoFiltered);
       }
     } else {
       console.error("The data doesnot contain features properties");
@@ -631,6 +625,66 @@ function readFileData(file) {
     reader.onerror = (err) => reject(err);
 
     reader.readAsText(file);
+  });
+}
+
+// function for reading csv file
+function readCSVFile(file) {
+  return new Promise((resolve, reject) => {
+    Papa.parse(file, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: (res) => {
+        resolve(res.data);
+      },
+      error: (err) => reject(err),
+    });
+  });
+}
+
+// function for reading xls(x) file
+function readExcelFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.readAsArrayBuffer(file);
+
+    reader.onload = function (event) {
+      const data = new Uint8Array(reader.result);
+
+      const work_book = XLSX.read(data, { type: "array", raw: true });
+
+      const sheet_names = work_book.SheetNames;
+
+      const sheet_data = XLSX.utils.sheet_to_json(
+        work_book.Sheets[sheet_names[0]],
+        {
+          header: 1,
+        }
+      );
+      // console.log(sheet_data);
+      const dataHeaders = sheet_data[0];
+      const dataRows = sheet_data;
+      dataRows.shift();
+      // console.log(dataHeaders);
+      const jsonObjects = [];
+
+      dataRows.forEach((row) => {
+        const dataForObject = {};
+
+        dataHeaders.forEach((field, i) => {
+          const key = field;
+          dataForObject[key] = row[i];
+        });
+
+        jsonObjects.push(dataForObject);
+      });
+
+      resolve(jsonObjects);
+    };
+    // on error
+    reader.onerror = (err) => reject(err);
   });
 }
 // #endregion
