@@ -505,12 +505,6 @@ const uploadsuccess = document
       }
     }
 
-    // // Handle excel file
-    // if (fileExtension === "xlsx" || fileExtension === "xls") {
-    //   //
-    //   const excel_file = document.getElementById("UploadFile").files[0];
-    // }
-
     // Handle geojson
     if (fileExtension === "geojson" || fileExtension == "zip") {
       // console.log(fileExtension);
