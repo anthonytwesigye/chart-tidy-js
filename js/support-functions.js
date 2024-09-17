@@ -362,7 +362,10 @@ function updateDataOnMap(
       filter: function (feature, layer) {
         if (filtersSelected.length > 0) {
           for (const element of filtersSelected) {
-            if (feature.properties[mapattribute].includes(element)) {
+            if (
+              feature.properties[mapattribute] &&
+              feature.properties[mapattribute].includes(element)
+            ) {
               return true;
             }
           }
@@ -392,28 +395,14 @@ function updateDataOnMap(
       },
     }).addTo(map);
   } else {
-    // mapData.setStyle(function (feature) {
-    //   const currpolColor = getPropColor(
-    //     attributecats,
-    //     feature.properties[mapattribute]
-    //   );
-    //   // console.log(currpolColor);
-    //   const currStyle = {
-    //     fillColor: currpolColor,
-    //     weight: 1,
-    //     opacity: 1,
-    //     color: currpolColor,
-    //     dashArray: "",
-    //     fillOpacity: 1,
-    //   };
-    //   return currStyle;
-    // });
-
     mapData = L.geoJSON(inputData, {
       filter: function (feature, layer) {
         if (filtersSelected.length > 0) {
           for (const element of filtersSelected) {
-            if (feature.properties[mapattribute].includes(element)) {
+            if (
+              feature.properties[mapattribute] &&
+              feature.properties[mapattribute].includes(element)
+            ) {
               return true;
             }
           }
@@ -459,14 +448,14 @@ function getUniqueAttributeValsGeojson(geojsondata, field) {
       geojsondata.features.map((feature) => feature.properties[field])
     ),
   ];
-
-  return uniqueCategories;
+  const cleanedCategories = uniqueCategories.filter((x) => x);
+  return cleanedCategories;
 }
 // function for getting unique values for a column of json data
 function getUniqueAttributeVals(jsondata, field) {
   const uniqueCategories = [...new Set(jsondata.map((item) => item[field]))];
-
-  return uniqueCategories;
+  const cleanedCategories = uniqueCategories.filter((x) => x);
+  return cleanedCategories;
 }
 
 // function for returning color based on a unique array
@@ -532,7 +521,7 @@ function getPropColor(uniqarray, prop) {
   if (uniqarray.indexOf(prop) >= 0) {
     return colorsForProperties[uniqarray.indexOf(prop)].color;
   } else {
-    return colorRamp[colorRamp.length - 1];
+    return "#999999";
   }
 }
 
