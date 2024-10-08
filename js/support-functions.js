@@ -256,6 +256,110 @@ function createGuageChartData(loadeddata, grpoption) {
 
   return dataForChart;
 }
+// function for handling guage chart data
+function createGuageChartTopData(loadeddata, grpoption) {
+  const totalLength = [...new Set(loadeddata.map((item) => item[grpoption]))]
+    .length;
+
+  let results;
+
+  //  tidy JS part
+  if (totalLength <= 10) {
+    results = tidy(
+      loadeddata,
+      groupBy(grpoption, [summarize({ count: n() })]),
+      arrange([desc("count")])
+    );
+  } else {
+    // top data
+    const topData = tidy(
+      loadeddata,
+      groupBy(grpoption, [summarize({ count: n() })]),
+      arrange([desc("count")]),
+      sliceMax(9, "count")
+    );
+    // bottom data
+    const bottomData = tidy(
+      loadeddata,
+      groupBy(grpoption, [summarize({ count: n() })]),
+      sliceMin(totalLength - 9, "count")
+    );
+    // bottom count
+    const bottomCount = bottomData
+      .map((item) => {
+        return item["count"];
+      })
+      .reduce((a, b) => a + b, 0);
+
+    // results
+    topData.push({ levelType: "Other", count: bottomCount });
+    results = topData;
+  }
+
+  const uniqueIds = results.map((item) => {
+    return item["levelType"];
+  });
+  // process the data
+  const arrCounts = results.map((item) => {
+    return item["count"];
+  });
+  const totalCounts = arrCounts.reduce((a, b) => a + b, 0);
+  const percentCounts = arrCounts.reduce((result, num) => {
+    return [...result, ((num / totalCounts) * 100).toFixed(1)];
+  }, []);
+
+  //  chart JS starts here
+  const myData = percentCounts;
+  const myLabs = uniqueIds;
+  const usedColors = uniqueIds.map((item) => {
+    return "rgba(255, 26, 104, 0.2)";
+  });
+  const usedBorder = uniqueIds.map((item) => {
+    return "rgba(255, 255, 255, 1)";
+  });
+
+  // chart js setup
+  const data = {
+    labels: myLabs,
+    datasets: [
+      {
+        label: "",
+        data: myData,
+        backgroundColor: usedColors,
+        borderColor: usedBorder,
+        borderWidth: 2,
+        hoverOffset: 25,
+      },
+    ],
+  };
+
+  console.log(data);
+
+  // config
+  const config = {
+    type: "doughnut",
+    data,
+    options: {
+      aspectRation: 0.5,
+      circumference: 180,
+      rotation: 270,
+      radius: "100%",
+      plugins: {
+        legend: false,
+      },
+      layout: {
+        padding: {
+          left: 10,
+          right: 10,
+        },
+      },
+    },
+  };
+  // console.log(duplicatesData);
+  const dataForChart = { initConfig: config, duplicatesTData: results };
+
+  return dataForChart;
+}
 
 function createDuplicatesTable(tabledata) {
   const summary = `<p> Duplicates summary</p3>`;

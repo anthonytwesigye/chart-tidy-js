@@ -1,5 +1,15 @@
 // load tidy JS
-const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
+const {
+  tidy,
+  mutate,
+  arrange,
+  desc,
+  groupBy,
+  summarize,
+  n,
+  sliceMax,
+  sliceMin,
+} = Tidy;
 // global objects and variables
 
 let filterOpts;
@@ -170,7 +180,7 @@ const uploadsuccess = document
               if (guageChartStatus != undefined) {
                 guageChartStatus.destroy();
               }
-              let guageData = createGuageChartData(
+              let guageData = createGuageChartTopData(
                 analysisData,
                 selectedOption
               );
@@ -245,7 +255,7 @@ const uploadsuccess = document
               if (guageChartStatus != undefined) {
                 guageChartStatus.destroy();
               }
-              let guageData = createGuageChartData(
+              let guageData = createGuageChartTopData(
                 analysisData,
                 selectedOption
               );
@@ -292,7 +302,7 @@ const uploadsuccess = document
         if (guageChartStatus != undefined) {
           guageChartStatus.destroy();
         }
-        let guageData = createGuageChartData(analysisData, selectedOption);
+        let guageData = createGuageChartTopData(analysisData, selectedOption);
         duplicatesChart = new Chart(
           document.getElementById("duplicatesChart"),
           guageData.initConfig
@@ -386,7 +396,7 @@ const uploadsuccess = document
                 if (guageChartStatus != undefined) {
                   guageChartStatus.destroy();
                 }
-                let guageData = createGuageChartData(
+                let guageData = createGuageChartTopData(
                   analysisData,
                   selectedOption
                 );
@@ -461,7 +471,7 @@ const uploadsuccess = document
                 if (guageChartStatus != undefined) {
                   guageChartStatus.destroy();
                 }
-                let guageData = createGuageChartData(
+                let guageData = createGuageChartTopData(
                   analysisData,
                   selectedOption
                 );
@@ -518,7 +528,7 @@ const uploadsuccess = document
           if (guageChartStatus != undefined) {
             guageChartStatus.destroy();
           }
-          let guageData = createGuageChartData(analysisData, selectedOption);
+          let guageData = createGuageChartTopData(analysisData, selectedOption);
           duplicatesChart = new Chart(
             document.getElementById("duplicatesChart"),
             guageData.initConfig
@@ -667,7 +677,7 @@ const uploadsuccess = document
               if (guageChartStatus != undefined) {
                 guageChartStatus.destroy();
               }
-              let guageData = createGuageChartData(
+              let guageData = createGuageChartTopData(
                 analysisData,
                 selectedOption
               );
@@ -754,7 +764,7 @@ const uploadsuccess = document
               if (guageChartStatus != undefined) {
                 guageChartStatus.destroy();
               }
-              let guageData = createGuageChartData(
+              let guageData = createGuageChartTopData(
                 analysisData,
                 selectedOption
               );
@@ -812,7 +822,7 @@ const uploadsuccess = document
         if (guageChartStatus != undefined) {
           guageChartStatus.destroy();
         }
-        let guageData = createGuageChartData(analysisData, selectedOption);
+        let guageData = createGuageChartTopData(analysisData, selectedOption);
         duplicatesChart = new Chart(
           document.getElementById("duplicatesChart"),
           guageData.initConfig
@@ -907,7 +917,7 @@ const uploadsuccess = document
                 if (guageChartStatus != undefined) {
                   guageChartStatus.destroy();
                 }
-                let guageData = createGuageChartData(
+                let guageData = createGuageChartTopData(
                   analysisData,
                   selectedOption
                 );
@@ -994,7 +1004,7 @@ const uploadsuccess = document
                 if (guageChartStatus != undefined) {
                   guageChartStatus.destroy();
                 }
-                let guageData = createGuageChartData(
+                let guageData = createGuageChartTopData(
                   analysisData,
                   selectedOption
                 );
@@ -1073,7 +1083,7 @@ const uploadsuccess = document
           if (guageChartStatus != undefined) {
             guageChartStatus.destroy();
           }
-          let guageData = createGuageChartData(analysisData, selectedOption);
+          let guageData = createGuageChartTopData(analysisData, selectedOption);
           duplicatesChart = new Chart(
             document.getElementById("duplicatesChart"),
             guageData.initConfig
