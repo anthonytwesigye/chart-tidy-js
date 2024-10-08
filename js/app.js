@@ -1,5 +1,15 @@
 // load tidy JS
-const { tidy, mutate, arrange, desc, groupBy, summarize, n } = Tidy;
+const {
+  tidy,
+  mutate,
+  arrange,
+  desc,
+  groupBy,
+  summarize,
+  n,
+  sliceMax,
+  sliceMin,
+} = Tidy;
 // global objects and variables
 
 let filterOpts;
@@ -16,7 +26,7 @@ let updateUniqAttributeCat;
 let myChart;
 let duplicatesChart;
 
-var mapData;
+let mapData;
 let chartStatus = Chart.getChart("myChart"); // <canvas> id
 let guageChartStatus = Chart.getChart("duplicatesChart"); // <canvas> id
 
@@ -170,7 +180,7 @@ const uploadsuccess = document
               if (guageChartStatus != undefined) {
                 guageChartStatus.destroy();
               }
-              let guageData = createGuageChartData(
+              let guageData = createGuageChartTopData(
                 analysisData,
                 selectedOption
               );
@@ -245,7 +255,7 @@ const uploadsuccess = document
               if (guageChartStatus != undefined) {
                 guageChartStatus.destroy();
               }
-              let guageData = createGuageChartData(
+              let guageData = createGuageChartTopData(
                 analysisData,
                 selectedOption
               );
@@ -292,7 +302,7 @@ const uploadsuccess = document
         if (guageChartStatus != undefined) {
           guageChartStatus.destroy();
         }
-        let guageData = createGuageChartData(analysisData, selectedOption);
+        let guageData = createGuageChartTopData(analysisData, selectedOption);
         duplicatesChart = new Chart(
           document.getElementById("duplicatesChart"),
           guageData.initConfig
@@ -386,7 +396,7 @@ const uploadsuccess = document
                 if (guageChartStatus != undefined) {
                   guageChartStatus.destroy();
                 }
-                let guageData = createGuageChartData(
+                let guageData = createGuageChartTopData(
                   analysisData,
                   selectedOption
                 );
@@ -461,7 +471,7 @@ const uploadsuccess = document
                 if (guageChartStatus != undefined) {
                   guageChartStatus.destroy();
                 }
-                let guageData = createGuageChartData(
+                let guageData = createGuageChartTopData(
                   analysisData,
                   selectedOption
                 );
@@ -518,7 +528,7 @@ const uploadsuccess = document
           if (guageChartStatus != undefined) {
             guageChartStatus.destroy();
           }
-          let guageData = createGuageChartData(analysisData, selectedOption);
+          let guageData = createGuageChartTopData(analysisData, selectedOption);
           duplicatesChart = new Chart(
             document.getElementById("duplicatesChart"),
             guageData.initConfig
@@ -667,7 +677,7 @@ const uploadsuccess = document
               if (guageChartStatus != undefined) {
                 guageChartStatus.destroy();
               }
-              let guageData = createGuageChartData(
+              let guageData = createGuageChartTopData(
                 analysisData,
                 selectedOption
               );
@@ -754,7 +764,7 @@ const uploadsuccess = document
               if (guageChartStatus != undefined) {
                 guageChartStatus.destroy();
               }
-              let guageData = createGuageChartData(
+              let guageData = createGuageChartTopData(
                 analysisData,
                 selectedOption
               );
@@ -812,7 +822,7 @@ const uploadsuccess = document
         if (guageChartStatus != undefined) {
           guageChartStatus.destroy();
         }
-        let guageData = createGuageChartData(analysisData, selectedOption);
+        let guageData = createGuageChartTopData(analysisData, selectedOption);
         duplicatesChart = new Chart(
           document.getElementById("duplicatesChart"),
           guageData.initConfig
@@ -907,7 +917,7 @@ const uploadsuccess = document
                 if (guageChartStatus != undefined) {
                   guageChartStatus.destroy();
                 }
-                let guageData = createGuageChartData(
+                let guageData = createGuageChartTopData(
                   analysisData,
                   selectedOption
                 );
@@ -994,7 +1004,7 @@ const uploadsuccess = document
                 if (guageChartStatus != undefined) {
                   guageChartStatus.destroy();
                 }
-                let guageData = createGuageChartData(
+                let guageData = createGuageChartTopData(
                   analysisData,
                   selectedOption
                 );
@@ -1073,7 +1083,7 @@ const uploadsuccess = document
           if (guageChartStatus != undefined) {
             guageChartStatus.destroy();
           }
-          let guageData = createGuageChartData(analysisData, selectedOption);
+          let guageData = createGuageChartTopData(analysisData, selectedOption);
           duplicatesChart = new Chart(
             document.getElementById("duplicatesChart"),
             guageData.initConfig
@@ -1113,9 +1123,9 @@ const uploadsuccess = document
 // #region ////////////////  Leaflet  //////////////////
 
 // map initialisation
-var map = L.map("map").setView([-17.926409198529797, 19.777738998189392], 13);
+const map = L.map("map").setView([-17.926409198529797, 19.777738998189392], 13);
 // osm layer
-var osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 });
@@ -1123,7 +1133,7 @@ osm.addTo(map);
 
 // tile layers
 // water color
-var watercolor = L.tileLayer(
+const watercolor = L.tileLayer(
   "https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.{ext}",
   {
     minZoom: 1,
@@ -1135,7 +1145,7 @@ var watercolor = L.tileLayer(
 );
 
 // dark matter
-var darkMatter = L.tileLayer(
+const darkMatter = L.tileLayer(
   "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
   {
     attribution:
@@ -1155,14 +1165,14 @@ googleStreets = L.tileLayer(
 );
 
 // layer controller
-var baseLayers = {
+let baseLayers = {
   OpenStreetMap: osm,
   WaterColor: watercolor,
   "Dark Matter": darkMatter,
   "Google Streets": googleStreets,
 };
 
-var overlays = {};
+let overlays = {};
 
 L.control
   .layers(baseLayers, overlays, {

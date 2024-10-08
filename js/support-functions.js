@@ -256,6 +256,110 @@ function createGuageChartData(loadeddata, grpoption) {
 
   return dataForChart;
 }
+// function for handling guage chart data
+function createGuageChartTopData(loadeddata, grpoption) {
+  const totalLength = [...new Set(loadeddata.map((item) => item[grpoption]))]
+    .length;
+
+  let results;
+
+  //  tidy JS part
+  if (totalLength <= 10) {
+    results = tidy(
+      loadeddata,
+      groupBy(grpoption, [summarize({ count: n() })]),
+      arrange([desc("count")])
+    );
+  } else {
+    // top data
+    const topData = tidy(
+      loadeddata,
+      groupBy(grpoption, [summarize({ count: n() })]),
+      arrange([desc("count")]),
+      sliceMax(9, "count")
+    );
+    // bottom data
+    const bottomData = tidy(
+      loadeddata,
+      groupBy(grpoption, [summarize({ count: n() })]),
+      sliceMin(totalLength - 9, "count")
+    );
+    // bottom count
+    const bottomCount = bottomData
+      .map((item) => {
+        return item["count"];
+      })
+      .reduce((a, b) => a + b, 0);
+
+    // results
+    topData.push({ levelType: "Other", count: bottomCount });
+    results = topData;
+  }
+
+  const uniqueIds = results.map((item) => {
+    return item["levelType"];
+  });
+  // process the data
+  const arrCounts = results.map((item) => {
+    return item["count"];
+  });
+  const totalCounts = arrCounts.reduce((a, b) => a + b, 0);
+  const percentCounts = arrCounts.reduce((result, num) => {
+    return [...result, ((num / totalCounts) * 100).toFixed(1)];
+  }, []);
+
+  //  chart JS starts here
+  const myData = percentCounts;
+  const myLabs = uniqueIds;
+  const usedColors = uniqueIds.map((item) => {
+    return "rgba(255, 26, 104, 0.2)";
+  });
+  const usedBorder = uniqueIds.map((item) => {
+    return "rgba(255, 255, 255, 1)";
+  });
+
+  // chart js setup
+  const data = {
+    labels: myLabs,
+    datasets: [
+      {
+        label: "",
+        data: myData,
+        backgroundColor: usedColors,
+        borderColor: usedBorder,
+        borderWidth: 2,
+        hoverOffset: 25,
+      },
+    ],
+  };
+
+  console.log(data);
+
+  // config
+  const config = {
+    type: "doughnut",
+    data,
+    options: {
+      aspectRation: 0.5,
+      circumference: 180,
+      rotation: 270,
+      radius: "100%",
+      plugins: {
+        legend: false,
+      },
+      layout: {
+        padding: {
+          left: 10,
+          right: 10,
+        },
+      },
+    },
+  };
+  // console.log(duplicatesData);
+  const dataForChart = { initConfig: config, duplicatesTData: results };
+
+  return dataForChart;
+}
 
 function createDuplicatesTable(tabledata) {
   const summary = `<p> Duplicates summary</p3>`;
@@ -362,7 +466,10 @@ function updateDataOnMap(
       filter: function (feature, layer) {
         if (filtersSelected.length > 0) {
           for (const element of filtersSelected) {
-            if (feature.properties[mapattribute].includes(element)) {
+            if (
+              feature.properties[mapattribute] &&
+              feature.properties[mapattribute].includes(element)
+            ) {
               return true;
             }
           }
@@ -392,22 +499,49 @@ function updateDataOnMap(
       },
     }).addTo(map);
   } else {
-    mapData.setStyle(function (feature) {
-      const currpolColor = getPropColor(
-        attributecats,
-        feature.properties[mapattribute]
-      );
-      // console.log(currpolColor);
-      const currStyle = {
-        fillColor: currpolColor,
-        weight: 1,
-        opacity: 1,
-        color: currpolColor,
-        dashArray: "",
-        fillOpacity: 1,
-      };
-      return currStyle;
-    });
+    mapData = L.geoJSON(inputData, {
+      filter: function (feature, layer) {
+        if (filtersSelected.length > 0) {
+          for (const element of filtersSelected) {
+            if (
+              feature.properties[mapattribute] &&
+              feature.properties[mapattribute].includes(element)
+            ) {
+              return true;
+            }
+          }
+        } else {
+          return true;
+        }
+      },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(createPopupContent(feature.properties), {
+            autoPan: true,
+            maxHeight: 300, // Set max height for the popup
+          });
+          layer.on("click", function () {
+            this.openPopup();
+          });
+        }
+      },
+      style: function (feature) {
+        const currpolColor = getPropColor(
+          attributecats,
+          feature.properties[mapattribute]
+        );
+        // console.log(currpolColor);
+        const currStyle = {
+          fillColor: currpolColor,
+          weight: 0.1,
+          opacity: 1,
+          color: "white",
+          dashArray: "",
+          fillOpacity: 0.7,
+        };
+        return currStyle;
+      },
+    }).addTo(map);
   }
 }
 
@@ -418,14 +552,14 @@ function getUniqueAttributeValsGeojson(geojsondata, field) {
       geojsondata.features.map((feature) => feature.properties[field])
     ),
   ];
-
-  return uniqueCategories;
+  const cleanedCategories = uniqueCategories.filter((x) => x);
+  return cleanedCategories;
 }
 // function for getting unique values for a column of json data
 function getUniqueAttributeVals(jsondata, field) {
   const uniqueCategories = [...new Set(jsondata.map((item) => item[field]))];
-
-  return uniqueCategories;
+  const cleanedCategories = uniqueCategories.filter((x) => x);
+  return cleanedCategories;
 }
 
 // function for returning color based on a unique array
@@ -491,7 +625,7 @@ function getPropColor(uniqarray, prop) {
   if (uniqarray.indexOf(prop) >= 0) {
     return colorsForProperties[uniqarray.indexOf(prop)].color;
   } else {
-    return colorRamp[colorRamp.length - 1];
+    return "#999999";
   }
 }
 
